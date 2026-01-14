@@ -67,7 +67,9 @@ void BoneIndexArrayUI::loadDynamicTableRows(){
     if (bsData){
         auto numbones = bsData->getNumberOfBoneIndices();
         auto temp = ADD_RAGDOLL_BONE_ROW + numbones + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         auto bones = static_cast<BehaviorFile *>(bsData->getParentFile())->getRagdollBoneNames();
         for (auto i = ADD_RAGDOLL_BONE_ROW + 1, j = 0; j < numbones; i++, j++){
             temp = bsData->getBoneIndexAt(j);

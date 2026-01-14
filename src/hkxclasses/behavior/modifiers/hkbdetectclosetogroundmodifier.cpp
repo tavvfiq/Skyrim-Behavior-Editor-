@@ -39,7 +39,9 @@ bool hkbDetectCloseToGroundModifier::readData(const HkxXmlReader &reader, long &
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -87,7 +89,9 @@ bool hkbDetectCloseToGroundModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -133,12 +137,16 @@ bool hkbDetectCloseToGroundModifier::isEventReferenced(int eventindex) const{
 
 void hkbDetectCloseToGroundModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (closeToGroundEvent.id > eventindex) ? closeToGroundEvent.id-- : NULL;
+    if (closeToGroundEvent.id > eventindex) {
+        closeToGroundEvent.id--;
+    }
 }
 
 void hkbDetectCloseToGroundModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (closeToGroundEvent.id == oldindex) ? closeToGroundEvent.id = newindex : NULL;
+    if (closeToGroundEvent.id == oldindex) {
+        closeToGroundEvent.id = newindex;
+    }
 }
 
 void hkbDetectCloseToGroundModifier::fixMergedEventIndices(BehaviorFile *dominantfile){
@@ -171,12 +179,16 @@ void hkbDetectCloseToGroundModifier::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     setReference(ref);
     setBindingReference(++ref);
-    (closeToGroundEvent.payload.data()) ? closeToGroundEvent.payload->updateReferences(++ref) : NULL;
+    if (closeToGroundEvent.payload.data()) {
+        closeToGroundEvent.payload->updateReferences(++ref);
+    }
 }
 
 QVector<HkxObject *> hkbDetectCloseToGroundModifier::getChildrenOtherTypes() const{
     QVector<HkxObject *> list;
-    (closeToGroundEvent.payload.data()) ? list.append(closeToGroundEvent.payload.data()) : NULL;
+    if (closeToGroundEvent.payload.data()) {
+        list.append(closeToGroundEvent.payload.data());
+    }
     return list;
 }
 

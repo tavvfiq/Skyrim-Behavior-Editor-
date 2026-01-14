@@ -67,7 +67,9 @@ bool BSLookAtModifier::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     int numbones;
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
@@ -115,7 +117,9 @@ bool BSLookAtModifier::readData(const HkxXmlReader &reader, long & index){
                     }
                 }
             }
-            (numbones > 0) ? index-- : NULL;
+            if (numbones > 0) {
+                index--;
+            }
         }else if (text == "eyeBones"){
             numbones = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "eyeBones");
@@ -145,7 +149,9 @@ bool BSLookAtModifier::readData(const HkxXmlReader &reader, long & index){
                     }
                 }
             }
-            (numbones > 0) ? index-- : NULL;
+            if (numbones > 0) {
+                index--;
+            }
         }else if (text == "limitAngleDegrees"){
             limitAngleDegrees = reader.getElementValueAt(index).toDouble(&ok);
             checkvalue(ok, "limitAngleDegrees");
@@ -200,7 +206,9 @@ bool BSLookAtModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -294,12 +302,16 @@ bool BSLookAtModifier::isEventReferenced(int eventindex) const{
 
 void BSLookAtModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (id > eventindex) ? id-- : NULL;
+    if (id > eventindex) {
+        id--;
+    }
 }
 
 void BSLookAtModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (id == oldindex) ? id = newindex: NULL;
+    if (id == oldindex) {
+        id = newindex;
+    }
 }
 
 void BSLookAtModifier::fixMergedEventIndices(BehaviorFile *dominantfile){
@@ -333,13 +345,17 @@ void BSLookAtModifier::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     setReference(ref);
     setBindingReference(++ref);
-    (payload.data()) ? payload->updateReferences(++ref) : NULL;
+    if (payload.data()) {
+        payload->updateReferences(++ref);
+    }
 }
 
 QVector<HkxObject *> BSLookAtModifier::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
-    (payload.data()) ? list.append(payload.data()) : NULL;
+    if (payload.data()) {
+        list.append(payload.data());
+    }
     return list;
 }
 

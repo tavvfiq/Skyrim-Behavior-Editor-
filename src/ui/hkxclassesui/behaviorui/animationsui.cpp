@@ -154,7 +154,9 @@ void AnimationsUI::addAnimation(){
 void AnimationsUI::removeAnimation(){
     if (loadedData && !static_cast<CharacterFile *>(loadedData->getParentFile())->isAnimationUsed(table->item(table->currentRow(), table->currentColumn())->text())){
         auto index = table->currentRow();
-        (!animData->removeAnimation(index)) ? LogFile::writeToLog("AnimationsUI::removeAnimation(): Failed!") : NULL;
+        if (!animData->removeAnimation(index)) {
+            LogFile::writeToLog("AnimationsUI::removeAnimation(): Failed!");
+        }
         loadedData->animationNames.removeAt(index);
         (index < table->rowCount()) ? table->removeRow(index) : NULL;
         (stackLyt->currentIndex() == ANIMATION_WIDGET) ? stackLyt->setCurrentIndex(TABLE_WIDGET) : NULL;

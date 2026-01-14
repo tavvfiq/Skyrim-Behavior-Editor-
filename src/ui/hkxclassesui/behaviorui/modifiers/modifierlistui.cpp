@@ -160,7 +160,9 @@ void ModifierListUI::loadData(HkxObject *data){
 void ModifierListUI::loadDynamicTableRows(){
     if (bsData){
         auto temp = ADD_MODIFIER_ROW + bsData->modifiers.size() + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         for (auto i = ADD_MODIFIER_ROW + 1, j = 0; j < bsData->modifiers.size(); i++, j++){
             auto child = bsData->getModifierAt(j);
             if (child){
@@ -209,7 +211,9 @@ void ModifierListUI::variableRenamed(const QString &name, int index){
         auto bind = bsData->getVariableBindingSetData();
         if (bind){
             auto bindIndex = bind->getVariableIndexOfBinding("enable");
-            (bindIndex == index) ? table->item(ENABLE_ROW, BINDING_COLUMN)->setText(name) : NULL;
+            if (bindIndex == index) {
+                table->item(ENABLE_ROW, BINDING_COLUMN)->setText(name);
+            }
         }
     }else{
         LogFile::writeToLog("ModifierListUI::variableRenamed(): The data is nullptr!!");

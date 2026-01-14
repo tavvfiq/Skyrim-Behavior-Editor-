@@ -131,14 +131,18 @@ bool hkbVariableBindingSet::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
         if (text == "bindings"){
             numbinds = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "bindings");
-            (numbinds > 0) ? index++ : NULL;
+            if (numbinds > 0) {
+                index++;
+            }
             for (auto j = 0; j < numbinds; j++, index++){
                 bindings.append(hkBinding());
                 for (; index < reader.getNumElements(); index++){
@@ -165,7 +169,9 @@ bool hkbVariableBindingSet::readData(const HkxXmlReader &reader, long & index){
                     }
                 }
             }
-            (numbinds > 0) ? index-- : NULL;
+            if (numbinds > 0) {
+                index--;
+            }
         }else if (text == "indexOfBindingToEnable"){
             indexOfBindingToEnable = reader.getElementValueAt(index).toInt(&ok);
             checkvalue(ok, "indexOfBindingToEnable");

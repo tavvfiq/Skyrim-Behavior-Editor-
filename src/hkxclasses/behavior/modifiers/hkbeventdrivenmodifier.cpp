@@ -116,7 +116,9 @@ bool hkbEventDrivenModifier::isEventReferenced(int eventindex) const{
 void hkbEventDrivenModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
     auto updateind = [&](int & index){
-        (index > eventindex) ? index-- : NULL;
+        if (index > eventindex) {
+            index--;
+        }
     };
     updateind(activateEventId);
     updateind(deactivateEventId);
@@ -125,7 +127,9 @@ void hkbEventDrivenModifier::updateEventIndices(int eventindex){
 void hkbEventDrivenModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
     auto mergeind = [&](int & index){
-        (index == oldindex) ? index = newindex : NULL;
+        if (index == oldindex) {
+            index = newindex;
+        }
     };
     mergeind(activateEventId);
     mergeind(deactivateEventId);
@@ -161,7 +165,9 @@ void hkbEventDrivenModifier::fixMergedEventIndices(BehaviorFile *dominantfile){
 QVector<DataIconManager *> hkbEventDrivenModifier::getChildren() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<DataIconManager *> list;
-    (modifier.data()) ? list.append(static_cast<DataIconManager*>(modifier.data())) : NULL;
+    if (modifier.data()) {
+        list.append(static_cast<DataIconManager*>(modifier.data()));
+    }
     return list;
 }
 
@@ -179,7 +185,9 @@ bool hkbEventDrivenModifier::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -218,7 +226,9 @@ bool hkbEventDrivenModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){

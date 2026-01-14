@@ -36,7 +36,9 @@ bool BSDistTriggerModifier::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -78,7 +80,9 @@ bool BSDistTriggerModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -121,12 +125,16 @@ bool BSDistTriggerModifier::isEventReferenced(int eventindex) const{
 
 void BSDistTriggerModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (triggerEvent.id > eventindex) ? triggerEvent.id-- : NULL;
+    if (triggerEvent.id > eventindex) {
+        triggerEvent.id--;
+    }
 }
 
 void BSDistTriggerModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (triggerEvent.id == oldindex) ? triggerEvent.id = newindex : NULL;
+    if (triggerEvent.id == oldindex) {
+        triggerEvent.id = newindex;
+    }
 }
 
 void BSDistTriggerModifier::fixMergedEventIndices(BehaviorFile *dominantfile){
@@ -159,13 +167,17 @@ void BSDistTriggerModifier::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     setReference(ref);
     setBindingReference(++ref);
-    (triggerEvent.payload.data()) ? triggerEvent.payload->setReference(++ref) : NULL;
+    if (triggerEvent.payload.data()) {
+        triggerEvent.payload->setReference(++ref);
+    }
 }
 
 QVector<HkxObject *> BSDistTriggerModifier::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
-    (triggerEvent.payload.data()) ? list.append(triggerEvent.payload.data()) : NULL;
+    if (triggerEvent.payload.data()) {
+        list.append(triggerEvent.payload.data());
+    }
     return list;
 }
 
@@ -275,7 +287,9 @@ QString BSDistTriggerModifier::evaluateDataValidity(){
     QString errors;
     auto isvalid = true;
     auto temp = HkDynamicObject::evaluateDataValidity();
-    (temp != "") ? errors.append(temp+getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": Invalid variable binding set!\n"): NULL;
+    if (temp != "") {
+        errors.append(temp+getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": Invalid variable binding set!\n");
+    }
     if (name == ""){
         isvalid = false;
         errors.append(getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": Invalid name!");

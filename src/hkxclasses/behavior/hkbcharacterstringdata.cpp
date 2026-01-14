@@ -75,18 +75,24 @@ int hkbCharacterStringData::addCharacterPropertyName(const QString &name, bool *
     auto index = -1;
     if (characterPropertyNames.contains(name)){
         index = characterPropertyNames.indexOf(name);
-        (wasadded) ? *wasadded = false : NULL;
+        if (wasadded) {
+            *wasadded = false;
+        }
     }else{
         characterPropertyNames.append(name);
         index = characterPropertyNames.size() - 1;
-        (wasadded) ? *wasadded = false : NULL;
+        if (wasadded) {
+            *wasadded = false;
+        }
     }
     return index;
 }
 
 void hkbCharacterStringData::setCharacterPropertyNameAt(int index, const QString &name){
     std::lock_guard <std::mutex> guard(mutex);
-    (characterPropertyNames.size() > index && index > -1) ? characterPropertyNames.replace(index, name) : NULL;
+    if (characterPropertyNames.size() > index && index > -1) {
+        characterPropertyNames.replace(index, name);
+    }
 }
 
 QString hkbCharacterStringData::getRagdollName() const{
@@ -116,22 +122,30 @@ QString hkbCharacterStringData::getBehaviorFilename() const{
 
 void hkbCharacterStringData::setBehaviorFilename(const QString &value){
     std::lock_guard <std::mutex> guard(mutex);
-    (value != "") ? behaviorFilename = value : NULL;
+    if (value != "") {
+        behaviorFilename = value;
+    }
 }
 
 void hkbCharacterStringData::setRagdollName(const QString &value){
     std::lock_guard <std::mutex> guard(mutex);
-    (value != "") ? ragdollName = value : NULL;
+    if (value != "") {
+        ragdollName = value;
+    }
 }
 
 void hkbCharacterStringData::setRigName(const QString &value){
     std::lock_guard <std::mutex> guard(mutex);
-    (value != "") ? rigName = value : NULL;
+    if (value != "") {
+        rigName = value;
+    }
 }
 
 void hkbCharacterStringData::setName(const QString &value){
     std::lock_guard <std::mutex> guard(mutex);
-    (value != "") ? name = value : NULL;
+    if (value != "") {
+        name = value;
+    }
 }
 
 QStringList hkbCharacterStringData::getCharacterPropertyNames() const{
@@ -155,7 +169,9 @@ void hkbCharacterStringData::generateAppendCharacterPropertyName(const QString &
 
 void hkbCharacterStringData::removeCharacterPropertyNameAt(int index){
     std::lock_guard <std::mutex> guard(mutex);
-    (index >= 0 && index < characterPropertyNames.size()) ? characterPropertyNames.removeAt(index) : NULL;
+    if (index >= 0 && index < characterPropertyNames.size()) {
+        characterPropertyNames.removeAt(index);
+    }
 }
 
 bool hkbCharacterStringData::readData(const HkxXmlReader &reader, long & index){
@@ -165,12 +181,16 @@ bool hkbCharacterStringData::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     auto readstrings =[&](QStringList & list, const QString & fieldname){
         numElems = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
         checkvalue(ok, fieldname);
-        (numElems > 0) ? index++ : NULL;
+        if (numElems > 0) {
+            index++;
+        }
         for (auto j = 0; j < numElems && index < reader.getNumElements(); j++, index++){
             list.append(reader.getElementValueAt(index));
             checkvalue((list.last() != ""), fieldname+".at("+QString::number(j)+")");

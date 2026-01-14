@@ -2,6 +2,7 @@
 #include "src/xml/hkxxmlreader.h"
 #include "src/filetypes/behaviorfile.h"
 #include "src/hkxclasses/behavior/hkbcliptriggerarray.h"
+#include <QRandomGenerator>
 
 #define MAX_TRIES 5
 
@@ -38,7 +39,7 @@ hkbClipGenerator::hkbClipGenerator(HkxFile *parent, long ref, bool addToAnimData
         int count = 0;
         bool added = par->addClipGenToAnimationData(name);
         while (!added && count < MAX_TRIES){
-            name = "ClipGenerator"+QString::number(refCount)+QString::number(qrand());
+            name = "ClipGenerator"+QString::number(refCount)+QString::number(QRandomGenerator::global()->generate());
             added = par->addClipGenToAnimationData(name);
             count++;
         }
@@ -63,7 +64,9 @@ bool hkbClipGenerator::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -120,7 +123,9 @@ bool hkbClipGenerator::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -220,13 +225,13 @@ void hkbClipGenerator::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     setReference(ref);
     setBindingReference(++ref);
-    triggers.data() ? triggers->setReference(++ref) : triggers;
+    if (triggers.data()) triggers->setReference(++ref);
 }
 
 QVector<HkxObject *> hkbClipGenerator::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
-    triggers.data() ? list.append(triggers.data()) : triggers;
+    if (triggers.data()) list.append(triggers.data());
     return list;
 }
 

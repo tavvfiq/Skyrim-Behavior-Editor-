@@ -169,14 +169,18 @@ bool hkbFootIkDriverInfo::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
         if (text == "legs"){
             numlegs = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "legs");
-            (numlegs > 0) ? index++ : NULL;
+            if (numlegs > 0) {
+                index++;
+            }
             for (auto j = 0; j < numlegs; j++, index++){
                 legs.append(hkbFootIkDriverInfoLeg());
                 for (; index < reader.getNumElements(); index++){
@@ -221,7 +225,9 @@ bool hkbFootIkDriverInfo::readData(const HkxXmlReader &reader, long & index){
                     }
                 }
             }
-            (numlegs > 0) ? index-- : NULL;
+            if (numlegs > 0) {
+                index--;
+            }
         }else if (text == "raycastDistanceUp"){
             raycastDistanceUp = reader.getElementValueAt(index).toDouble(&ok);
             checkvalue(ok, "raycastDistanceUp");

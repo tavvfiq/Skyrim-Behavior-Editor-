@@ -115,7 +115,9 @@ bool SkeletonFile::parse(){
     QByteArray value;
     auto ref = 0;
     auto appendnread = [&](HkxObject *obj, const QString & nameoftype){
-        (!appendAndReadData(index, obj)) ? LogFile::writeToLog("BehaviorFile: parse(): Failed to read a "+nameoftype+" object! Ref: "+QString::number(ref)) : NULL;
+        if (!appendAndReadData(index, obj)) {
+            LogFile::writeToLog("BehaviorFile: parse(): Failed to read a "+nameoftype+" object! Ref: "+QString::number(ref));
+        }
     };
     if (getReader().parse()){
         for (; index < getReader().getNumElements(); index++){
@@ -124,9 +126,13 @@ bool SkeletonFile::parse(){
                 value = getReader().getNthAttributeValueAt(index, 2);
                 if (value != ""){
                     ref = getReader().getNthAttributeValueAt(index, 0).remove(0, 1).toLong(&ok);
-                    (!ok) ? LogFile::writeToLog("BehaviorFile: parse() failed! The object reference string contained invalid characters and failed to convert to an integer!") : NULL;
+                    if (!ok) {
+                        LogFile::writeToLog("BehaviorFile: parse() failed! The object reference string contained invalid characters and failed to convert to an integer!");
+                    }
                     signature = (HkxSignature)value.toULongLong(&ok, 16);
-                    (!ok) ? LogFile::writeToLog("BehaviorFile: parse() failed! The object signature string contained invalid characters and failed to convert to an integer!") : NULL;
+                    if (!ok) {
+                        LogFile::writeToLog("BehaviorFile: parse() failed! The object signature string contained invalid characters and failed to convert to an integer!");
+                    }
                     switch (signature){
                     case HK_SIMPLE_LOCAL_FRAME:
                         appendnread(new hkSimpleLocalFrame(this, "", ref), "HK_SIMPLE_LOCAL_FRAME"); break;

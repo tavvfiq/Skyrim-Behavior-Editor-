@@ -6,12 +6,12 @@ by the Creation Engine powering the video game Skyrim. Havok Behavior
 is used in this engine to select/manipulate actor animations in
 the game.
 
-Internally this tool uses hkxcmd to convert between packed binary
+Internally this tool uses hkxconv to convert between packed binary
 hkx and hkx xml. It parses the hkx xml files associated with a character
 project, graphs all the data in each behavior file and exposes all
 of the important data to the user via a number of different widgets.
 
-<b>NOTE: As hkxcmd cannot work with SSE animation/behavior files, you will need to use the original Skyrim animation/behavior files for this tool to work! See the bottom of this readme for how to set up your project!</b>
+<b>NOTE: This tool now supports both original Skyrim (32-bit) and Skyrim Special Edition (64-bit) animation/behavior files using hkxconv!</b>
 
 It also parses the animation text files that contain data representing
 animation translation and rotation data along with information used

@@ -66,14 +66,18 @@ bool hkbHandIkDriverInfo::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
         if (text == "hands"){
             numhands = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "hands");
-            (numhands > 0) ? index++ : NULL;
+            if (numhands > 0) {
+                index++;
+            }
             for (auto j = 0; j < numhands; j++, index++){
                 hands.append(hkbHandIkDriverInfoHand());
                 for (; index < reader.getNumElements(); index++){
@@ -124,7 +128,9 @@ bool hkbHandIkDriverInfo::readData(const HkxXmlReader &reader, long & index){
                     }
                 }
             }
-            (numhands > 0) ? index-- : NULL;
+            if (numhands > 0) {
+                index--;
+            }
         }else if (text == "fadeInOutCurve"){
             fadeInOutCurve = reader.getElementValueAt(index);
             checkvalue(BlendCurve.contains(fadeInOutCurve), "fadeInOutCurve");

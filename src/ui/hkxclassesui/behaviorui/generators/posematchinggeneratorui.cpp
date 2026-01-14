@@ -385,7 +385,9 @@ void PoseMatchingGeneratorUI::loadData(HkxObject *data){
 void PoseMatchingGeneratorUI::loadDynamicTableRows(){
     if (bsData){
         auto temp = ADD_CHILD_ROW + bsData->getNumberOfChildren() + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         for (auto i = ADD_CHILD_ROW + 1, j = 0; j < bsData->getNumberOfChildren(); i++, j++){
             auto child = static_cast<hkbBlenderGeneratorChild *>(bsData->children.at(j).data());
             if (child){

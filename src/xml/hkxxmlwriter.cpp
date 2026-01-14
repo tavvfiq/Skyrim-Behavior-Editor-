@@ -3,6 +3,7 @@
 
 #include <QFile>
 #include <QTextStream>
+#include <Qt>
 
 const QString HkxXMLWriter::version("1.0");
 const QString HkxXMLWriter::encoding("ascii");
@@ -109,7 +110,9 @@ bool HkxXMLWriter::writeLine(const QString & tag, bool opening){
             nestLevel++;
             stream << text+"<"+tag+">\n";
         }else{
-            (nestLevel > 0) ? nestLevel-- : NULL;
+            if (nestLevel > 0) {
+                nestLevel--;
+            }
             appendtabs();
             stream << text+"</"+tag+">\n";
         }
@@ -126,7 +129,7 @@ bool HkxXMLWriter::writeLine(const QString & value){
         for (auto i = 0; i < nestLevel; i++){
             text.append("\t");
         }
-        auto list = value.split('\n', QString::SkipEmptyParts);
+        auto list = value.split('\n', Qt::SkipEmptyParts);
         if (!list.isEmpty()){
             for (auto i = 0; i < list.size(); i++){
                 stream << text+list.at(i)+"\n";

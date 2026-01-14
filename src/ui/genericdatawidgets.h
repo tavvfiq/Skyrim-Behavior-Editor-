@@ -94,7 +94,9 @@ public:
 public:
     QValidator::State validate(QString & input, int &) const Q_DECL_OVERRIDE{
         auto result = QValidator::Acceptable;
-        (input == "") ? result = QValidator::Invalid : NULL;
+        if (input == "") {
+            result = QValidator::Invalid;
+        }
         return result;
     }
 };
@@ -182,7 +184,9 @@ public:
 public:
     QValidator::State validate(QString & input, int &) const Q_DECL_OVERRIDE{
         auto result = QValidator::Acceptable;
-        (input.contains(">") || input.contains("<")) ? result = QValidator::Invalid : NULL;
+        if (input.contains(">") || input.contains("<")) {
+            result = QValidator::Invalid;
+        }
         return result;
     }
 
@@ -216,7 +220,9 @@ public:
     TableWidgetItem(const QString & text, int align = Qt::AlignLeft | Qt::AlignVCenter, const QColor & backgroundColor = QColor(Qt::white), const QBrush & textColor = QBrush(Qt::black), const QString & tip = "", bool checkable = false)
         : QTableWidgetItem(text)
     {
-        (checkable) ? setCheckState(Qt::Unchecked) : NULL;
+        if (checkable) {
+            setCheckState(Qt::Unchecked);
+        }
         setTextAlignment(align);
         setBackgroundColor(backgroundColor);
         setForeground(textColor);
@@ -315,7 +321,9 @@ public:
     }
 protected:
     void wheelEvent(QWheelEvent *e){
-        (hasFocus()) ? QSpinBox::wheelEvent(e) : NULL;
+        if (hasFocus()) {
+            QSpinBox::wheelEvent(e);
+        }
     }
 };
 
@@ -339,7 +347,9 @@ public:
     }
 protected:
     void wheelEvent(QWheelEvent *e){
-        (hasFocus()) ? QDoubleSpinBox::wheelEvent(e) : NULL;
+        if (hasFocus()) {
+            QDoubleSpinBox::wheelEvent(e);
+        }
     }
 };
 
@@ -359,7 +369,9 @@ public:
     }
 protected:
     void wheelEvent(QWheelEvent *e){
-        (hasFocus()) ? QComboBox::wheelEvent(e) : NULL;
+        if (hasFocus()) {
+            QComboBox::wheelEvent(e);
+        }
     }
 };
 

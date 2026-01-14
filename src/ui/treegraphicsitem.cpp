@@ -37,8 +37,12 @@ TreeGraphicsItem::TreeGraphicsItem(TreeGraphicsItem *parent, DataIconManager *ob
             }
             auto index = children.indexOf(this);
             children.insert(indexToInsert, this);
-            (index > indexToInsert) ? index++ : NULL;
-            (index < children.size()) ? children.removeAt(index) : NULL;
+            if (index > indexToInsert) {
+                index++;
+            }
+            if (index < children.size()) {
+                children.removeAt(index);
+            }
             for (auto i = 0; i < children.size(); i++){
                 children[i]->setParentItem(parent);
             }
@@ -48,7 +52,9 @@ TreeGraphicsItem::TreeGraphicsItem(TreeGraphicsItem *parent, DataIconManager *ob
 }
 
 TreeGraphicsItem::~TreeGraphicsItem(){
-    (!itemData->hasIcons()) ? itemData->removeObjectAt(-1) : NULL;
+    if (!itemData->hasIcons()) {
+        itemData->removeObjectAt(-1);
+    }
     itemData->removeIcon(this);
     if (scene()){
         scene()->removeItem(this);
@@ -127,7 +133,9 @@ qreal TreeGraphicsItem::getYCoordinate(){
         auto children = paritem->childItems();
         while (!children.isEmpty()){
             if (children.first() != this){
-                (children.first()->isVisible()) ? yCoordinate = yCoordinate + static_cast<TreeGraphicsItem *>(children.first())->boundingRect().height()*2 : NULL;
+                if (children.first()->isVisible()) {
+                    yCoordinate = yCoordinate + static_cast<TreeGraphicsItem *>(children.first())->boundingRect().height()*2;
+                }
                 auto tempList = children.first()->childItems();
                 children.removeFirst();
                 children = tempList + children;
@@ -144,7 +152,9 @@ bool TreeGraphicsItem::reorderChildren(){
     auto dataChildren = itemData->getChildren();
     for (auto j = 0; j < dataChildren.size(); j++){
         for (auto k = j + 1; k < dataChildren.size(); k++){
-            (dataChildren.at(j) == dataChildren.at(k)) ? dataChildren.removeAt(k) : NULL;
+            if (dataChildren.at(j) == dataChildren.at(k)) {
+                dataChildren.removeAt(k);
+            }
         }
     }
     for (auto i = 0; i < children.size(); i++){
@@ -278,7 +288,9 @@ TreeGraphicsItem * TreeGraphicsItem::setParent(TreeGraphicsItem *newParent, int 
                 for (auto i = 0; i < children.size(); i++){
                     children[i]->setParentItem(nullptr);
                 }
-                (index < children.size()) ? children.removeAt(index) : NULL;
+                if (index < children.size()) {
+                    children.removeAt(index);
+                }
                 children.insert(indexToInsert, this);
                 for (auto i = 0; i < children.size(); i++){
                     children[i]->setParentItem(newParent);

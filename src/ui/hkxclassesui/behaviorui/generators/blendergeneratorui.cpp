@@ -260,7 +260,9 @@ void BlenderGeneratorUI::loadData(HkxObject *data){
 void BlenderGeneratorUI::loadDynamicTableRows(){
     if (bsData){
         auto temp = ADD_CHILD_ROW + bsData->getNumberOfChildren() + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         for (auto i = ADD_CHILD_ROW + 1, j = 0; j < bsData->getNumberOfChildren(); i++, j++){
             auto child = bsData->getChildDataAt(j);
             if (child){

@@ -13,7 +13,9 @@ hkbProjectStringData::hkbProjectStringData(HkxFile *parent, long ref, const QStr
     setType(HKB_PROJECT_STRING_DATA, TYPE_OTHER);
     parent->addObjectToFile(this, ref);
     refCount++;
-    (characterfilename != "") ? characterFilenames.append(characterfilename) : NULL;
+    if (characterfilename != "") {
+        characterFilenames.append(characterfilename);
+    }
 }
 
 const QString hkbProjectStringData::getClassname(){

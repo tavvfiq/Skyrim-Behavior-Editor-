@@ -26,7 +26,9 @@ bool hkbBoneIndexArray::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -84,7 +86,9 @@ bool hkbBoneIndexArray::write(HkxXMLWriter *writer){
 QVector<HkxObject *> hkbBoneIndexArray::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector <HkxObject *> list;
-    (getVariableBindingSetData()) ? list.append(getVariableBindingSetData()) : NULL;
+    if (getVariableBindingSetData()) {
+        list.append(getVariableBindingSetData());
+    }
     return list;
 }
 

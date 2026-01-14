@@ -35,7 +35,9 @@ bool hkbEventsFromRangeModifier::readData(const HkxXmlReader &reader, long & ind
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -71,7 +73,9 @@ bool hkbEventsFromRangeModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -116,30 +120,40 @@ bool hkbEventsFromRangeModifier::isEventReferenced(int eventindex) const{
 
 void hkbEventsFromRangeModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (eventRanges.data()) ? eventRanges->updateEventIndices(eventindex) : NULL;
+    if (eventRanges.data()) {
+        eventRanges->updateEventIndices(eventindex);
+    }
 }
 
 void hkbEventsFromRangeModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (eventRanges.data()) ? eventRanges->mergeEventIndex(oldindex, newindex) : NULL;
+    if (eventRanges.data()) {
+        eventRanges->mergeEventIndex(oldindex, newindex);
+    }
 }
 
 void hkbEventsFromRangeModifier::fixMergedEventIndices(BehaviorFile *dominantfile){
     std::lock_guard <std::mutex> guard(mutex);
-    (eventRanges.data()) ? eventRanges->fixMergedEventIndices(dominantfile) : NULL;
+    if (eventRanges.data()) {
+        eventRanges->fixMergedEventIndices(dominantfile);
+    }
 }
 
 void hkbEventsFromRangeModifier::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     setReference(ref);
     setBindingReference(++ref);
-    (eventRanges.data()) ? eventRanges->updateReferences(++ref) : NULL;
+    if (eventRanges.data()) {
+        eventRanges->updateReferences(++ref);
+    }
 }
 
 QVector<HkxObject *> hkbEventsFromRangeModifier::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
-    (eventRanges.data()) ? list.append(eventRanges.data()) : NULL;
+    if (eventRanges.data()) {
+        list.append(eventRanges.data());
+    }
     return list;
 }
 

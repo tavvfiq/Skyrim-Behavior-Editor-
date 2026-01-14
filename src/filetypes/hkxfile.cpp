@@ -10,7 +10,7 @@ HkxFile::HkxFile(MainWindow *window, const QString & name)
 }
 
 void HkxFile::closeFile(){
-    (isOpen()) ? close() : NULL;
+    if (isOpen()) close();
 }
 
 bool HkxFile::getIsChanged() const{

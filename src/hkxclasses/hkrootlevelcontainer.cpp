@@ -48,7 +48,9 @@ bool hkRootLevelContainer::readData(const HkxXmlReader &reader, long & index){
                         }
                     }
                 }
-                (numVariants > 0) ? index-- : NULL;
+                if (numVariants > 0) {
+                    index--;
+                }
             }else{
                 LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\nAttempt to read the number of variants failed!");
                 return false;

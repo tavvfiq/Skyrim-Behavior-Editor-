@@ -19,6 +19,8 @@
 #include "src/ui/hkxclassesui/behaviorui/animationsui.h"
 
 #include <QtWidgets>
+#include <QRegularExpression>
+#include <QRandomGenerator>
 
 #define MAX_REFERENCED_BEHAVIOR_FILES 30
 #define CONFIRM_CLOSE_PROJECT_WITHOUT_SAVING "WARNING: There are unsaved changes to the project, character or behavior files currently open!\nAre you sure you want to close them without saving?"
@@ -72,9 +74,9 @@ MainWindow::MainWindow()
 {
     //setStyleSheet("QComboBox {background: yellow};QWidget {background: darkGray}");
     projectUI->setDisabled(true);
-    hkxcmdPath = QDir::currentPath()+"/hkxcmd.exe";
+    hkxconvPath = QDir::currentPath()+"/hkxconv.exe";
 #ifdef QT_DEBUG
-    hkxcmdPath = "c:/users/wayne/desktop/hkxcmd.exe";
+    hkxconvPath = "D:/Modding/hkxconv/hkxconv.exe";
 #endif
     newProjectA->setStatusTip("Create a new character project!");
     newProjectA->setShortcut(QKeySequence::New);
@@ -219,13 +221,17 @@ QMessageBox::StandardButton MainWindow::yesNoDialogue(const QString & message){
 
 QMessageBox::StandardButton MainWindow::closeAllDialogue(){
     auto ret = QMessageBox::warning(this, "Skyrim Behavior Tool", CONFIRM_CLOSE_PROJECT_WITHOUT_SAVING, QMessageBox::Yes | QMessageBox::SaveAll | QMessageBox::Cancel);
-    (ret == QMessageBox::SaveAll) ? saveProject(true) : NULL;
+    if (ret == QMessageBox::SaveAll) {
+        saveProject(true);
+    }
     return ret;
 }
 
 QMessageBox::StandardButton MainWindow::closeFileDialogue(){
     auto ret = QMessageBox::warning(this, "Skyrim Behavior Tool", CONFIRM_CLOSE_FILE_WITHOUT_SAVING, QMessageBox::Yes | QMessageBox::Save | QMessageBox::Cancel);
-    (ret == QMessageBox::Save) ? save() : NULL;
+    if (ret == QMessageBox::Save) {
+        save();
+    }
     return ret;
 }
 
@@ -307,7 +313,9 @@ void MainWindow::refocus(){
         auto index = tabs->currentIndex() - 1;
         if (index != -1){
             if (index >= 0 && index < behaviorGraphs.size()){
-                (!behaviorGraphs.at(index)->refocus()) ? LogFile::writeToLog("MainWindow::refocus(): No behavior graph item is currently selected!") : NULL;
+                if (!behaviorGraphs.at(index)->refocus()) {
+                    LogFile::writeToLog("MainWindow::refocus(): No behavior graph item is currently selected!");
+                }
             }else{
                 if (tabs->count() < 2){
                     WARNING_MESSAGE("No behavior file is currently being viewed!!!")
@@ -333,13 +341,17 @@ void MainWindow::setGameMode(){
 void MainWindow::setPathToGameDirectory(){
     bool ok;
     auto path = QInputDialog::getText(this, tr("Set path to game directory!"), tr("Path:"), QLineEdit::Normal, skyrimDirectory, &ok);
-    (ok && path != "") ? skyrimDirectory = path : NULL;
+    if (ok && path != "") {
+        skyrimDirectory = path;
+    }
 }
 
 void MainWindow::setProjectExportPath(){
     bool ok;
     auto path = QInputDialog::getText(this, tr("Set project export path!"), tr("Path:"), QLineEdit::Normal, projectExportPath, &ok);
-    (ok && path != "") ? projectExportPath = path : NULL;
+    if (ok && path != "") {
+        projectExportPath = path;
+    }
 }
 
 void MainWindow::save(){
@@ -353,19 +365,25 @@ void MainWindow::saveFile(int index, int & taskCount, bool usenormalsave){
         if (index >= 0 && index < projectFile->behaviorFiles.size()){
             auto backupPath = QDir::currentPath()+"/Backup";
             QDir dir(backupPath);
-            (!dir.exists()) ? dir.mkpath(backupPath) : NULL;
+            if (!dir.exists()) {
+                dir.mkpath(backupPath);
+            }
             auto behavior = projectFile->behaviorFiles.at(index);
             mutex.unlock();
             if (behavior){
                 auto filename = backupPath+"\\"+behavior->fileName().section("/",-1,-1);
                 QFile backup(filename);
                 if (backup.exists()){
-                    (!backup.remove()) ? LogFile::writeToLog(QString("Failed to remove to old backup file "+backupPath.section("/",-1,-1)+"!").toLocal8Bit().data()) : NULL;
+                    if (!backup.remove()) {
+                        LogFile::writeToLog(QString("Failed to remove to old backup file "+backupPath.section("/",-1,-1)+"!").toLocal8Bit().data());
+                    }
                 }
                 if (!behavior->copy(behavior->fileName(), filename)){
                     LogFile::writeToLog("Backup failed!");
                 }else{
-                    (!behavior->remove()) ? LogFile::writeToLog(QString("Failed to remove to old file "+backupPath.section("/",-1,-1)+"!").toLocal8Bit().data()) : NULL;
+                    if (!behavior->remove()) {
+                        LogFile::writeToLog(QString("Failed to remove to old file "+backupPath.section("/",-1,-1)+"!").toLocal8Bit().data());
+                    }
                 }
                 (usenormalsave) ? behavior->write() : behavior->mergedWrite();
                 behavior->setIsChanged(false);
@@ -459,7 +477,7 @@ void MainWindow::packAndExportProjectToSkyrimDirectory(bool exportanimdata){
         LogFile::writeToLog("Exporting the current project to the Skyrim game directory...");
         auto path = skyrimDirectory+"/"+projectExportPath;
         auto projectFolder = path+"/"+lastFileSelectedPath.section("/", -1, -1);
-        convertProject(lastFileSelectedPath, projectFolder, "-f SAVE_CONCISE");
+        convertProject(lastFileSelectedPath, projectFolder, "-v hkx");
         if (exportanimdata){
             exportAnimationData();
         }
@@ -479,13 +497,21 @@ void MainWindow::exportAnimationData(){
             QDir dir(skyrimDirectory+"/data/meshes");
             if (dir.exists()){
                 QFile file(skyrimDirectory+"/data/meshes/"+filename);
-                (file.exists()) ? file.remove() : NULL;
-                (!animData.copy(skyrimDirectory+"/data/meshes/"+filename)) ? LogFile::writeToLog("Failed to export animationdatasinglefile.txt to the game directory!") : NULL;
+                if (file.exists()) {
+                    file.remove();
+                }
+                if (!animData.copy(skyrimDirectory+"/data/meshes/"+filename)) {
+                    LogFile::writeToLog("Failed to export animationdatasinglefile.txt to the game directory!");
+                }
             }else{
                 if (QDir().mkdir(skyrimDirectory+"/data/meshes")){
                     QFile file(skyrimDirectory+"/data/meshes/"+filename);
-                    (file.exists()) ? file.remove() : NULL;
-                    (!animData.copy(skyrimDirectory+"/data/meshes/"+filename)) ? LogFile::writeToLog("Failed to export animationdatasinglefile.txt to the game directory!") : NULL;
+                    if (file.exists()) {
+                        file.remove();
+                    }
+                    if (!animData.copy(skyrimDirectory+"/data/meshes/"+filename)) {
+                        LogFile::writeToLog("Failed to export animationdatasinglefile.txt to the game directory!");
+                    }
                 }else{
                     LogFile::writeToLog("Failed to create directory: "+skyrimDirectory+"/data/meshes"+"!");
                 }
@@ -510,8 +536,10 @@ void MainWindow::packAndExportFileToSkyrimDirectory(bool exportanimdata){
             auto projectFolder = path+"/"+lastFileSelectedPath.section("/", -1, -1);
             auto filename = tabs->tabText(tabs->currentIndex());
             auto temppath = projectFolder+"/"+projectFile->character->getBehaviorDirectoryName()+"/"+filename;
-            if (hkxcmd(lastFileSelectedPath+"/"+projectFile->character->getBehaviorDirectoryName()+"/"+filename, temppath, count) == HKXCMD_SUCCESS){
-                (exportanimdata) ? exportAnimationData() : NULL;
+            if (hkxconv(lastFileSelectedPath+"/"+projectFile->character->getBehaviorDirectoryName()+"/"+filename, temppath, count, "hkx") == HKXCONV_SUCCESS){
+                if (exportanimdata) {
+                    exportAnimationData();
+                }
                 dialog.setProgress("Behavior file exported sucessfully!", dialog.maximum());
                 LogFile::writeToLog("Time taken to export the file is approximately "+QString::number(timer.elapsed())+" milliseconds");
                 auto errors = projectFile->detectErrorsInBehavior(temppath);
@@ -578,13 +606,15 @@ void MainWindow::mergeProjects(){
 void MainWindow::mergeFNIS(){
     QString othercharactername;
     auto replacefile = [&](){
-        QFile file(othercharactername);
-        if (file.exists() && file.remove()){
-            if (!QFile(QString(othercharactername).replace(".hkx", "-out.hkx")).rename(othercharactername)){
-                WARNING_MESSAGE("The attempt to rename defaultfemale failed!");return;
+        // hkxconv outputs .xml files, rename to .hkx
+        QString xmlFile = QString(othercharactername).replace(".hkx", ".xml");
+        QFile file(xmlFile);
+        if (file.exists()){
+            if (!file.rename(othercharactername)){
+                WARNING_MESSAGE("The attempt to rename "+xmlFile+" to "+othercharactername+" failed!");return;
             }
         }else{
-            LogFile::writeToLog("MainWindow::mergeFNIS(): Failed to remove the character file \""+othercharactername+"!");
+            LogFile::writeToLog("MainWindow::mergeFNIS(): The converted XML file \""+xmlFile+"\" was not found!");
         }
     };
     QTime timer;
@@ -615,7 +645,7 @@ void MainWindow::mergeFNIS(){
             othercharactername = skyrimDirectory+"/data/meshes/actors/character/characters female/defaultfemale.hkx";
             auto defaultfemale = new CharacterFile(this, projectFile, othercharactername);
             auto count = 1;
-            if (hkxcmd(othercharactername, "", count, "") == HKXCMD_SUCCESS){
+            if (hkxconv(othercharactername, "", count, "xml") == HKXCONV_SUCCESS){
                 replacefile();
                 if (defaultfemale->parse()){
                     if (projectFile->character && defaultfemale->merge(projectFile->character)){
@@ -625,7 +655,7 @@ void MainWindow::mergeFNIS(){
                             }
                         }
                         defaultfemale->write();
-                        if (hkxcmd(othercharactername, "", count) == HKXCMD_SUCCESS){
+                        if (hkxconv(othercharactername, "", count, "hkx") == HKXCONV_SUCCESS){
                             replacefile();
                         }else{
                             WARNING_MESSAGE("The attempt to convert "+othercharactername+" failed!");return;
@@ -665,7 +695,9 @@ void MainWindow::findGenerator(){
     if (projectFile){
         auto index = tabs->currentIndex() - 1;
         if (index >= 0 && index < behaviorGraphs.size()){
-            (objectDataWid) ? objectDataWid->connectToGeneratorTable() : NULL;
+            if (objectDataWid) {
+                objectDataWid->connectToGeneratorTable();
+            }
         }else{
             if (tabs->count() < 2){
                 WARNING_MESSAGE("No behavior file is currently being viewed!!!")
@@ -682,7 +714,9 @@ void MainWindow::findModifier(){
     if (projectFile){
         auto index = tabs->currentIndex() - 1;
         if (index >= 0 && index < behaviorGraphs.size()){
-            (objectDataWid) ? objectDataWid->connectToModifierTable() : NULL;
+            if (objectDataWid) {
+                objectDataWid->connectToModifierTable();
+            }
         }else{
             if (tabs->count() < 2){
                 WARNING_MESSAGE("No behavior file is currently being viewed!!!")
@@ -698,15 +732,17 @@ void MainWindow::findModifier(){
 BehaviorFile * MainWindow::openBehaviorForMerger(QString & filepath){
     BehaviorFile *ptr = nullptr;
     auto count = 1;
-    if (filepath != "" && hkxcmd(filepath, filepath, count, "") == HKXCMD_SUCCESS){
+    if (filepath != "" && hkxconv(filepath, filepath, count, "xml") == HKXCONV_SUCCESS){
         {
-            QFile file(QString(filepath).replace(".hkx", "-out.hkx"));
-            if (file.exists() && file.remove()){
+            // hkxconv outputs .xml files, so rename .xml to .hkx (keeping XML content)
+            QString xmlFile = QString(filepath).replace(".hkx", ".xml");
+            QFile file(xmlFile);
+            if (file.exists()){
                 if (!file.rename(filepath)){
-                    WARNING_MESSAGE("The attempt to rename "+filepath+" failed!");
+                    WARNING_MESSAGE("The attempt to rename "+xmlFile+" to "+filepath+" failed!");
                 }
             }else{
-                LogFile::writeToLog("MainWindow::openBehaviorForMerger(): Failed to remove the behavior file \""+filepath+"!");
+                LogFile::writeToLog("MainWindow::openBehaviorForMerger(): The converted XML file \""+xmlFile+"\" was not found!");
             }
         }
         ptr = new BehaviorFile(this, nullptr, nullptr, filepath);
@@ -752,9 +788,13 @@ QString MainWindow::generateUniqueBehaviorName(){
     for (auto i = 0; i < behaviornames.size(); i++){
         if (behaviornames.at(i) == name){
             auto index = name.lastIndexOf('_');
-            (index > -1) ? name.remove(++index, name.size()) : NULL;
+            if (index > -1) {
+                name.remove(++index, name.size());
+            }
             name.append(QString::number(num)+".hkx");
-            (++num > 1) ? i = 0 : NULL;
+            if (++num > 1) {
+                i = 0;
+            }
         }
     }
     return lastFileSelectedPath+"/"+projectFile->getBehaviorDirectoryName()+"/"+name;
@@ -767,7 +807,7 @@ void MainWindow::addNewBehavior(bool initData){
         if (projectFile->character){
             bool ok;
             auto filename = QInputDialog::getText(this, "Add A New Behavior File To The Current Project!", "Behavior Name:", QLineEdit::Normal, "NEW_BEHAVIOR", &ok);
-            if (ok && !filename.isEmpty() && !filename.contains(QRegExp("^[a-z-A-Z\\]+$"))){
+            if (ok && !filename.isEmpty() && !filename.contains(QRegularExpression("^[a-z-A-Z\\]+$"))){
                 if (filename != ""){
                     projectFile->behaviorFiles.append(new BehaviorFile(this, projectFile, projectFile->character, filename));
                     (initData) ? projectFile->behaviorFiles.last()->generateDefaultCharacterData() : projectFile->behaviorFiles.last()->generateNewBehavior();
@@ -865,7 +905,9 @@ void MainWindow::openProject(QString & filepath, bool loadui, bool loadanimdata,
                 QDirIterator it(lastFileSelectedPath+"/behaviors"); //Wont work for dogs, wolves!!!
                 while (it.hasNext()){
                     behavior = it.next();
-                    (behavior.contains(".hkx")) ? behaviornames.append(behavior) : NULL;
+                    if (behavior.contains(".hkx")) {
+                        behaviornames.append(behavior);
+                    }
                 }
                 progress.setProgress("Loading behavior files...", 0);
                 //This also reads files that may not belong to the current project! See dog!!
@@ -945,7 +987,9 @@ void MainWindow::openProject(QString & filepath, bool loadui, bool loadanimdata,
                     futures.clear();
                 }
                 //projectFile->generateAnimClipDataForProject();
-                (loadui && !behaviornames.isEmpty()) ? openBehaviorFile(behaviornames.first()) : NULL;
+                if (loadui && !behaviornames.isEmpty()) {
+                    openBehaviorFile(behaviornames.first());
+                }
                 progress.setProgress("Project loaded sucessfully!!!", progress.maximum());
             }else{
                 LogFile::writeToLog(QString("MainWindow::openProject(): The skeleton file "+character->getRigName()+" could not be parsed!!!").toLocal8Bit().data());
@@ -996,7 +1040,11 @@ bool MainWindow::openBehavior(const QString & filename, int & taskCount, bool ch
             projectFile->behaviorFiles.append(newbehavior);
             newbehavior = projectFile->behaviorFiles.last();
             mutex.unlock();
-            (!newbehavior->parse()) ? LogFile::writeToLog("MainWindow::openBehavior(): The selected behavior file \""+filename+"\" failed to parse!") : result = true;
+            if (!newbehavior->parse()) {
+                LogFile::writeToLog("MainWindow::openBehavior(): The selected behavior file \""+filename+"\" failed to parse!");
+            } else {
+                result = true;
+            }
         }else{
             LogFile::writeToLog("MainWindow::openBehavior(): No project is opened!");
         }
@@ -1014,18 +1062,27 @@ bool MainWindow::closeAll(){
     if (projectFile){
         auto unsavedChanges = false;
         for (auto i = 0; i < behaviorGraphs.size(); i++){
-            (projectFile->behaviorFiles.at(i)->getIsChanged()) ? unsavedChanges = true : NULL;
+            if (projectFile->behaviorFiles.at(i)->getIsChanged()) {
+                unsavedChanges = true;
+            }
         }
-        (projectFile->character->getIsChanged()) ? unsavedChanges = true : NULL;
+        if (projectFile->character->getIsChanged()) {
+            unsavedChanges = true;
+        }
         if (!unsavedChanges || closeAllDialogue() != QMessageBox::Cancel){
             projectUI->setDisabled(true);
             objectDataWid->unloadDataWidget();
             tabs->clear();
             for (auto j = 0; j < behaviorGraphs.size(); j++){
-                (behaviorGraphs.at(j)) ? delete behaviorGraphs.at(j) : NULL;
+                if (behaviorGraphs.at(j)) {
+                    delete behaviorGraphs.at(j);
+                }
             }
             behaviorGraphs.clear();
-            (projectFile) ? delete projectFile, projectFile = nullptr : NULL;
+            if (projectFile) {
+                delete projectFile;
+                projectFile = nullptr;
+            }
             return true;
         }else{
             return false;
@@ -1088,12 +1145,20 @@ void MainWindow::openBehaviorFile(const QString & fileName){
 
 void MainWindow::openAnimationFile(const QString &animationname){
     auto count = 1;
-    if (hkxcmd(animationname, animationname, count, "-v:xml") == HKXCMD_SUCCESS){
-        auto ptr = new AnimationFile(this, QString(animationname).replace(".hkx", "-out.hkx"));
+    if (hkxconv(animationname, animationname, count, "xml") == HKXCONV_SUCCESS){
+        // hkxconv outputs .xml files, rename to .hkx for the parser
+        QString xmlFile = QString(animationname).replace(".hkx", ".xml");
+        QFile xmlFileObj(xmlFile);
+        if (xmlFileObj.exists() && xmlFileObj.rename(animationname)){
+            // File renamed successfully
+        }
+        auto ptr = new AnimationFile(this, animationname);
         if (ptr->parse()){
             projectFile->setAnimationIndexDuration(-1, projectFile->character->getNumberOfAnimations() - 1, ptr->getDuration());
             projectFile->addEncryptedAnimationName(animationname);
-            (!ptr->remove()) ? LogFile::writeToLog("MainWindow::openAnimationFile: Failed to remove the duplicate animation file!") : NULL;
+            if (!ptr->remove()) {
+                LogFile::writeToLog("MainWindow::openAnimationFile: Failed to remove the duplicate animation file!");
+            }
             delete ptr;
         }else{
             LogFile::writeToLog("MainWindow::openAnimationFile(): The selected animation file was not opened!");
@@ -1239,8 +1304,20 @@ bool MainWindow::convertProject(const QString &filepath, const QString &newpath,
         qreal difference = ((1.0)/((qreal)(filelist.size())))*(100.0);
         std::unique_lock<std::mutex> locker(mutex);
         //Read files...
+        // Determine format from flags or default to xml for HKX to XML conversion
+        QString formatFlag = flags;
+        if (formatFlag.isEmpty() || formatFlag == "-v:xml") {
+            formatFlag = "xml";
+        } else if (formatFlag.contains("xml", Qt::CaseInsensitive)) {
+            formatFlag = "xml";
+        } else if (formatFlag.contains("hkx", Qt::CaseInsensitive) || formatFlag == "-f SAVE_CONCISE") {
+            formatFlag = "hkx";
+        } else {
+            formatFlag = "xml"; // default
+        }
+        
         for (uint i = 0; i < maxThreads, fileIndex < filelist.size(); i++, fileIndex++){
-            threads.push_back(std::thread(&MainWindow::hkxcmd, this, filelist.at(fileIndex), pathtoallfiles.at(fileIndex), std::ref(taskCount), flags));
+            threads.push_back(std::thread(&MainWindow::hkxconv, this, filelist.at(fileIndex), pathtoallfiles.at(fileIndex), std::ref(taskCount), formatFlag));
             threads.back().detach();
         }
         while (taskCount > 0){
@@ -1252,7 +1329,7 @@ bool MainWindow::convertProject(const QString &filepath, const QString &newpath,
             previousCount = taskCount;
             for (; taskdifference > 0; taskdifference--){
                 if (fileIndex < filelist.size()){
-                    threads.push_back(std::thread(&MainWindow::hkxcmd, this, filelist.at(fileIndex), pathtoallfiles.at(fileIndex), std::ref(taskCount), flags));
+                    threads.push_back(std::thread(&MainWindow::hkxconv, this, filelist.at(fileIndex), pathtoallfiles.at(fileIndex), std::ref(taskCount), formatFlag));
                     threads.back().detach();
                     fileIndex++;
                 }
@@ -1277,16 +1354,15 @@ bool MainWindow::convertProject(const QString &filepath, const QString &newpath,
             }
             progress.setValue(50);
             {
+                // hkxconv outputs .xml files, rename them to .hkx (keeping XML content)
                 QDirIterator it(filepath.section("/", 0, -2), QDirIterator::Subdirectories);
                 while (it.hasNext()){
                     auto temp = it.next();
-                    if (temp.contains("-out.xml")){
-                        if (!QDir(temp).rename(temp, QString(temp).replace("-out.xml", ".hkx"))){
-                            LogFile::writeToLog(QString("MainWindow::convertProject(): The file "+temp+" could not be renamed!!!").toLocal8Bit().data());
-                        }
-                    }else if (temp.contains(".xml")){
-                        if (!QDir(temp).rename(temp, QString(temp).replace(".xml", ".hkx"))){
-                            LogFile::writeToLog(QString("MainWindow::convertProject(): The file "+temp+" could not be renamed!!!").toLocal8Bit().data());
+                    if (temp.contains(".xml") && !temp.contains("/animations/", Qt::CaseInsensitive) && !temp.contains("/_1stperson/", Qt::CaseInsensitive)){
+                        QString newName = QString(temp).replace(".xml", ".hkx");
+                        QFile file(temp);
+                        if (file.exists() && !file.rename(newName)){
+                            LogFile::writeToLog(QString("MainWindow::convertProject(): The file "+temp+" could not be renamed to "+newName+"!!!").toLocal8Bit().data());
                         }
                     }
                 }
@@ -1299,17 +1375,37 @@ bool MainWindow::convertProject(const QString &filepath, const QString &newpath,
     return true;
 }
 
-MainWindow::HKXCMD_RETURN MainWindow::hkxcmd(const QString &filepath, const QString &outputDirectory, int & taskcount, const QString &flags){
-    auto command = "\""+hkxcmdPath+"\" convert \""+filepath+"\" \""+outputDirectory+"\" "+flags;
+MainWindow::HKXCONV_RETURN MainWindow::hkxconv(const QString &filepath, const QString &outputDirectory, int & taskcount, const QString &format){
+    // Determine format from file extension if not provided
+    QString actualFormat = format;
+    if (actualFormat.isEmpty()) {
+        if (filepath.endsWith(".hkx", Qt::CaseInsensitive)) {
+            actualFormat = "xml";
+        } else if (filepath.endsWith(".xml", Qt::CaseInsensitive)) {
+            actualFormat = "hkx";
+        } else {
+            actualFormat = "xml"; // default for HKX to XML conversion
+        }
+    }
+    
+    // Remove old format flags if present (for backward compatibility)
+    if (actualFormat.contains(":")) {
+        actualFormat = actualFormat.split(":").last();
+    }
+    if (actualFormat == "SAVE_CONCISE" || actualFormat == "-f SAVE_CONCISE") {
+        actualFormat = "hkx";
+    }
+    
+    auto command = "\""+hkxconvPath+"\" convert \""+filepath+"\" \""+outputDirectory+"\" -v "+actualFormat;
     command.replace("/", "\\");
-    auto value = (HKXCMD_RETURN)QProcess().execute(command);
-    if (value == HKXCMD_SUCCESS){
+    auto value = (HKXCONV_RETURN)QProcess().execute(command);
+    if (value == HKXCONV_SUCCESS){
         mutex.lock();
         taskcount--;
         conditionVar.notify_one();
         mutex.unlock();
     }else{
-        LogFile::writeToLog("MainWindow: hkxcmd() failed!\nThe command \""+command+"\" failed!");
+        LogFile::writeToLog("MainWindow: hkxconv() failed!\nThe command \""+command+"\" failed!");
     }
     return value;
 }
@@ -1365,7 +1461,7 @@ void MainWindow::createNewProject(){
             }
             bool ok;
             auto projectname = QInputDialog::getText(this, tr("Set project name!"), tr("Project name:"), QLineEdit::Normal, "", &ok);
-            if (ok && projectname != "" && !projectname.contains(QRegExp("^[a-z-A-Z\\]+$"))){
+            if (ok && projectname != "" && !projectname.contains(QRegularExpression("^[a-z-A-Z\\]+$"))){
                 auto projectDirectoryPath = lastFileSelectedPath+"/"+projectname;
                 {
                     QDir projectDirectory(lastFileSelectedPath);

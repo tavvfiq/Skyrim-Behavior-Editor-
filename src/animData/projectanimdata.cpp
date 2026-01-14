@@ -353,9 +353,13 @@ void ProjectAnimData::fixNumberAnimationLines(){
 
 ProjectAnimData::~ProjectAnimData(){
     for (auto i = 0; i < animationData.size(); i++){
-        (animationData.at(i)) ? delete animationData.at(i) : NULL;
+        if (animationData.at(i)) {
+            delete animationData.at(i);
+        }
     }
     for (auto i = 0; i < animationMotionData.size(); i++){
-        (animationMotionData.at(i)) ? delete animationMotionData.at(i) : NULL;
+        if (animationMotionData.at(i)) {
+            delete animationMotionData.at(i);
+        }
     }
 }

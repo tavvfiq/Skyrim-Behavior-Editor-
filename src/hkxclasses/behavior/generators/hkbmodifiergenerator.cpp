@@ -72,7 +72,9 @@ QVector<DataIconManager *> hkbModifierGenerator::getChildren() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<DataIconManager *> list;
     auto getchildren = [&](DataIconManager *ptr){
-        ptr ? list.append(ptr) : ptr;
+        if (ptr) {
+            list.append(ptr);
+        }
     };
     getchildren(static_cast<DataIconManager*>(modifier.data()));
     getchildren(static_cast<DataIconManager*>(generator.data()));
@@ -83,7 +85,11 @@ QString hkbModifierGenerator::getGeneratorName() const{
     std::lock_guard <std::mutex> guard(mutex);
     QString genname("NONE");
     auto gen = static_cast<hkbGenerator *>(generator.data());
-    (gen) ? genname = gen->getName() : LogFile::writeToLog(getClassname()+" Cannot get child name!");
+    if (gen) {
+        genname = gen->getName();
+    } else {
+         LogFile::writeToLog(getClassname()+" Cannot get child name!");
+    }
     return genname;
 }
 
@@ -91,7 +97,11 @@ QString hkbModifierGenerator::getModifierName() const{
     std::lock_guard <std::mutex> guard(mutex);
     QString modname("NONE");
     auto gen = static_cast<hkbGenerator *>(modifier.data());
-    (gen) ? modname = gen->getName() : LogFile::writeToLog(getClassname()+" Cannot get child name!");
+    if (gen) {
+        modname = gen->getName();
+    } else {
+        LogFile::writeToLog(getClassname()+" Cannot get child name!");
+    }
     return modname;
 }
 
@@ -111,7 +121,9 @@ bool hkbModifierGenerator::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -140,7 +152,9 @@ bool hkbModifierGenerator::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){

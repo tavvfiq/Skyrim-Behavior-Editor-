@@ -92,7 +92,9 @@ bool hkbBlendingTransitionEffect::operator ==(const hkbBlendingTransitionEffect 
 QVector<HkxObject *> hkbBlendingTransitionEffect::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector <HkxObject *> list;
-    (getVariableBindingSetData()) ? list.append(getVariableBindingSetData()) : NULL;
+    if (getVariableBindingSetData()) {
+        list.append(getVariableBindingSetData());
+    }
     return list;
 }
 
@@ -182,7 +184,9 @@ bool hkbBlendingTransitionEffect::readData(const HkxXmlReader &reader, long & in
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);

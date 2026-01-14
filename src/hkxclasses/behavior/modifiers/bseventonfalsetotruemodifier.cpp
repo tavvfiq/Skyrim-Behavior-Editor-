@@ -40,7 +40,9 @@ bool BSEventOnFalseToTrueModifier::readData(const HkxXmlReader &reader, long & i
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -119,7 +121,9 @@ bool BSEventOnFalseToTrueModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -180,7 +184,9 @@ bool BSEventOnFalseToTrueModifier::isEventReferenced(int eventindex) const{
 void BSEventOnFalseToTrueModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
     auto updateindices = [&](int & id){
-        (id > eventindex) ? id-- : NULL;
+        if (id > eventindex) {
+            id--;
+        }
     };
     updateindices(eventToSend1.id);
     updateindices(eventToSend2.id);
@@ -190,7 +196,9 @@ void BSEventOnFalseToTrueModifier::updateEventIndices(int eventindex){
 void BSEventOnFalseToTrueModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
     auto mergeindices = [&](int & id){
-        (id == oldindex) ? id = newindex : NULL;
+        if (id == oldindex) {
+            id = newindex;
+        }
     };
     mergeindices(eventToSend1.id);
     mergeindices(eventToSend2.id);
@@ -228,7 +236,9 @@ void BSEventOnFalseToTrueModifier::fixMergedEventIndices(BehaviorFile *dominantf
 void BSEventOnFalseToTrueModifier::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     auto updaterefs = [&](HkxSharedPtr & shdptr){
-        (shdptr.data()) ? shdptr.data()->updateReferences(++ref) : NULL;
+        if (shdptr.data()) {
+            shdptr.data()->updateReferences(++ref);
+        }
     };
     setReference(ref);
     setBindingReference(++ref);
@@ -241,7 +251,9 @@ QVector<HkxObject *> BSEventOnFalseToTrueModifier::getChildrenOtherTypes() const
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
     auto getchildren = [&](const HkxSharedPtr & shdptr){
-        (shdptr.data()) ? list.append(shdptr.data()) : NULL;
+        if (shdptr.data()) {
+            list.append(shdptr.data());
+        }
     };
     getchildren(eventToSend1.payload);
     getchildren(eventToSend2.payload);
@@ -252,7 +264,9 @@ QVector<HkxObject *> BSEventOnFalseToTrueModifier::getChildrenOtherTypes() const
 bool BSEventOnFalseToTrueModifier::merge(HkxObject *recessiveObject){ //TO DO: Make thread safe!!!
     std::lock_guard <std::mutex> guard(mutex);
     auto merge = [&](HkxSharedPtr & shdptr, HkxSharedPtr & recshdptr){
-        (!shdptr.data() && recshdptr.data()) ? getParentFile()->addObjectToFile(recshdptr.data(), -1) : NULL;
+        if (!shdptr.data() && recshdptr.data()) {
+            getParentFile()->addObjectToFile(recshdptr.data(), -1);
+        }
     };
     BSEventOnFalseToTrueModifier *recobj;
     if (!getIsMerged() && recessiveObject && recessiveObject->getSignature() == BS_EVENT_ON_FALSE_TO_TRUE_MODIFIER){
@@ -442,8 +456,12 @@ QString BSEventOnFalseToTrueModifier::evaluateDataValidity(){
         errors.append(getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": "+message+"!");
     };
     auto temp = HkDynamicObject::evaluateDataValidity();
-    (temp != "") ? errors.append(temp+getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": Invalid variable binding set!\n"): NULL;
-    (name == "") ? setinvalid("Invalid name") : NULL;
+    if (temp != "") {
+        errors.append(temp+getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": Invalid variable binding set!\n");
+    }
+    if (name == "") {
+        setinvalid("Invalid name");
+    }
     if (eventToSend1.id >= static_cast<BehaviorFile *>(getParentFile())->getNumberOfEvents()){
         setinvalid("eventToSend1.id out of range! Setting to max index in range!");
         eventToSend1.id = static_cast<BehaviorFile *>(getParentFile())->getNumberOfEvents() - 1;

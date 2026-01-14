@@ -33,7 +33,9 @@ bool hkbEvaluateExpressionModifier::readData(const HkxXmlReader &reader, long & 
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -63,7 +65,9 @@ bool hkbEvaluateExpressionModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -106,12 +110,16 @@ bool hkbEvaluateExpressionModifier::isEventReferenced(int eventindex) const{
 
 void hkbEvaluateExpressionModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (expressions.data()) ? expressions->updateEventIndices(eventindex) : NULL;
+    if (expressions.data()) {
+        expressions->updateEventIndices(eventindex);
+    }
 }
 
 void hkbEvaluateExpressionModifier::fixMergedEventIndices(BehaviorFile *dominantfile){
     std::lock_guard <std::mutex> guard(mutex);
-    (expressions.data()) ? expressions->fixMergedEventIndices(dominantfile) : NULL;
+    if (expressions.data()) {
+        expressions->fixMergedEventIndices(dominantfile);
+    }
 }
 
 bool hkbEvaluateExpressionModifier::merge(HkxObject *recessiveObject){ //TO DO: Make thread safe!!!
@@ -137,12 +145,16 @@ void hkbEvaluateExpressionModifier::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     setReference(ref);
     setBindingReference(++ref);
-    (expressions.data()) ? expressions->updateReferences(++ref) : NULL;
+    if (expressions.data()) {
+        expressions->updateReferences(++ref);
+    }
 }
 
 QVector<HkxObject *> hkbEvaluateExpressionModifier::getChildrenOtherTypes() const{
     QVector<HkxObject *> list;
-    (expressions.data()) ? list.append(expressions.data()) : NULL;
+    if (expressions.data()) {
+        list.append(expressions.data());
+    }
     return list;
 }
 

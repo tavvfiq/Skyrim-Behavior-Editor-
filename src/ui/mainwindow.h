@@ -80,8 +80,8 @@ private slots:
     void closeTab(int index);
     void addNewBehavior(bool initData);
 private:
-    enum HKXCMD_RETURN{
-        HKXCMD_SUCCESS
+    enum HKXCONV_RETURN{
+        HKXCONV_SUCCESS = 0
     };
     QString generateUniqueBehaviorName();
     BehaviorFile *openBehaviorForMerger(QString & filepath);
@@ -90,8 +90,8 @@ private:
     bool openBehavior(const QString & filename, int &taskCount, bool checkisopen = true);
     bool exitProgram();
     bool findGameDirectory(const QString &gamename, QString &gamedirectory);
-    bool convertProject(const QString &filepath, const QString &newpath = "", const QString &flags = "-v:xml");
-    HKXCMD_RETURN hkxcmd(const QString &filepath, const QString &outputDirectory, int &taskcount, const QString &flags = "-f SAVE_CONCISE");
+    bool convertProject(const QString &filepath, const QString &newpath = "", const QString &flags = "-v xml");
+    HKXCONV_RETURN hkxconv(const QString &filepath, const QString &outputDirectory, int &taskcount, const QString &format = "");
     int getBehaviorGraphIndex(const QString & filename);
     void readSettings();
     void writeSettings();
@@ -100,7 +100,7 @@ private:
     bool closeAll();
 private:
     static const int zoomFactor = 120;
-    QString hkxcmdPath;
+    QString hkxconvPath;
     QString skyrimDirectory;
     QString skyrimSpecialEdtionDirectory;
     QString skyrimBehaviorUpdateToolFullPath;

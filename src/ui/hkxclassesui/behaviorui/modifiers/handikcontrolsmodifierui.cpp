@@ -116,7 +116,9 @@ void HandIkControlsModifierUI::loadData(HkxObject *data){
 void HandIkControlsModifierUI::loadDynamicTableRows(){
     if (bsData){
         auto temp = ADD_HAND_ROW + bsData->getNumberOfHands() + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         for (auto i = ADD_HAND_ROW + 1, j = 0; j < bsData->getNumberOfHands(); i++, j++){
             UIHelper::setRowItems(i, "Hand "+QString::number(j), "hkHand", "Remove", "Edit", "Double click to remove this Hand", "Double click to edit this Hand", table);
         }
@@ -241,7 +243,9 @@ void HandIkControlsModifierUI::variableRenamed(const QString & name, int index){
             if (bind){
                 auto setname = [&](const QString & fieldname, int row){
                     auto bindIndex = bind->getVariableIndexOfBinding(fieldname);
-                    (bindIndex == index) ? table->item(row, BINDING_COLUMN)->setText(name) : NULL;
+                    if (bindIndex == index) {
+                        table->item(row, BINDING_COLUMN)->setText(name);
+                    }
                 };
                 setname("enable", ENABLE_ROW);
             }

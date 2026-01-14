@@ -120,14 +120,18 @@ bool hkbClipTriggerArray::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
         if (text == "triggers"){
             numtriggers = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "triggers");
-            (numtriggers > 0) ? index++ : NULL;
+            if (numtriggers > 0) {
+                index++;
+            }
             for (auto j = 0; j < numtriggers; j++, index++){
                 triggers.append(HkTrigger());
                 for (; index < reader.getNumElements(); index++){
@@ -153,7 +157,9 @@ bool hkbClipTriggerArray::readData(const HkxXmlReader &reader, long & index){
                     }
                 }
             }
-            (numtriggers > 0) ? index-- : NULL;
+            if (numtriggers > 0) {
+                index--;
+            }
         }
     }
     index--;
@@ -220,14 +226,18 @@ bool hkbClipTriggerArray::isEventReferenced(int eventindex) const{
 void hkbClipTriggerArray::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < triggers.size(); i++){
-        (triggers.at(i).event.id > eventindex) ? triggers[i].event.id-- : NULL;
+        if (triggers.at(i).event.id > eventindex) {
+            triggers[i].event.id--;
+        }
     }
 }
 
 void hkbClipTriggerArray::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < triggers.size(); i++){
-        (triggers.at(i).event.id == oldindex) ? triggers[i].event.id = newindex : NULL;
+        if (triggers.at(i).event.id == oldindex) {
+            triggers[i].event.id = newindex;
+        }
     }
 }
 
@@ -297,7 +307,9 @@ void hkbClipTriggerArray::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     setReference(ref);
     for (auto i = 0; i < triggers.size(); i++){
-        (triggers.at(i).event.payload.data()) ? triggers[i].event.payload->updateReferences(++ref) : NULL;
+        if (triggers.at(i).event.payload.data()) {
+            triggers[i].event.payload->updateReferences(++ref);
+        }
     }
 }
 
@@ -305,7 +317,9 @@ QVector<HkxObject *> hkbClipTriggerArray::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
     for (auto i = 0; i < triggers.size(); i++){
-        (triggers.at(i).event.payload.data()) ? list.append(triggers.at(i).event.payload.data()) : NULL;
+        if (triggers.at(i).event.payload.data()) {
+            list.append(triggers.at(i).event.payload.data());
+        }
     }
     return list;
 }

@@ -136,7 +136,9 @@ void EvaluateExpressionModifierUI::loadData(HkxObject *data){
 void EvaluateExpressionModifierUI::loadDynamicTableRows(){
     if (bsData){
         auto temp = ADD_EXPRESSION_ROW + bsData->getNumberOfExpressions() + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         auto exps = bsData->getExpressions();
         if (exps){
             for (auto i = ADD_EXPRESSION_ROW + 1, j = 0; j < bsData->getNumberOfExpressions(); i++, j++){

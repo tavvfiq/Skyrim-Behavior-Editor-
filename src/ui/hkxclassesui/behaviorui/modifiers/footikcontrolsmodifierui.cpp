@@ -258,7 +258,9 @@ void FootIkControlsModifierUI::loadData(HkxObject *data){
 void FootIkControlsModifierUI::loadDynamicTableRows(){
     if (bsData){
         auto temp = ADD_LEG_ROW + bsData->getNumberOfLegs() + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         for (auto i = ADD_LEG_ROW + 1, j = 0; j < bsData->getNumberOfLegs(); i++, j++){
             UIHelper::setRowItems(i, "Leg "+QString::number(j), "hkLeg", "Remove", "Edit", "Double click to remove this Leg", "Double click to edit this Leg", table);
         }
@@ -506,7 +508,9 @@ void FootIkControlsModifierUI::variableRenamed(const QString & name, int index){
             if (bind){
                 auto setname = [&](const QString & fieldname, int row){
                     auto bindIndex = bind->getVariableIndexOfBinding(fieldname);
-                    (bindIndex == index) ? table->item(row, BINDING_COLUMN)->setText(name) : NULL;
+                    if (bindIndex == index) {
+                        table->item(row, BINDING_COLUMN)->setText(name);
+                    }
                 };
                 setname("enable", ENABLE_ROW);
                 setname("onOffGain", ON_OFF_GAIN_ROW);

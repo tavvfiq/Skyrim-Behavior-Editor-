@@ -34,7 +34,9 @@ bool hkbFootIkControlsModifier::readData(const HkxXmlReader &reader, long & inde
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -88,7 +90,9 @@ bool hkbFootIkControlsModifier::readData(const HkxXmlReader &reader, long & inde
         }else if (text == "legs"){
             numlegs = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "legs");
-            (numlegs > 0) ? index++ : NULL;
+            if (numlegs > 0) {
+                index++;
+            }
             for (auto j = 0; j < numlegs; j++, index++){
                 legs.append(hkLeg());
                 for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
@@ -114,7 +118,9 @@ bool hkbFootIkControlsModifier::readData(const HkxXmlReader &reader, long & inde
                     }
                 }
             }
-            (numlegs > 0) ? index-- : NULL;
+            if (numlegs > 0) {
+                index--;
+            }
         }else if (text == "errorOutTranslation"){
             errorOutTranslation = readVector4(reader.getElementValueAt(index), &ok);
             checkvalue(ok, "errorOutTranslation");
@@ -134,7 +140,9 @@ bool hkbFootIkControlsModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -335,7 +343,10 @@ void hkbFootIkControlsModifier::addLeg(hkbFootIkControlsModifier::hkLeg leg){
 
 void hkbFootIkControlsModifier::removeLeg(int index){
     std::lock_guard <std::mutex> guard(mutex);
-    (index >= 0 && index < legs.size()) ? legs.removeAt(index), setIsFileChanged(true) : NULL;
+    if (index >= 0 && index < legs.size()) {
+        legs.removeAt(index);
+        setIsFileChanged(true);
+    }
 }
 
 hkQuadVariable hkbFootIkControlsModifier::getErrorOutTranslation() const{
@@ -381,14 +392,18 @@ bool hkbFootIkControlsModifier::isEventReferenced(int eventindex) const{
 void hkbFootIkControlsModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < legs.size(); i++){
-        (legs.at(i).id > eventindex) ? legs[i].id-- : NULL;
+        if (legs.at(i).id > eventindex) {
+            legs[i].id--;
+        }
     }
 }
 
 void hkbFootIkControlsModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < legs.size(); i++){
-        (legs.at(i).id == oldindex) ? legs[i].id = newindex : NULL;
+        if (legs.at(i).id == oldindex) {
+            legs[i].id = newindex;
+        }
     }
 }
 
@@ -423,7 +438,9 @@ void hkbFootIkControlsModifier::updateReferences(long &ref){
     setReference(ref);
     setBindingReference(++ref);
     for (auto i = 0; i < legs.size(); i++){
-        (legs.at(i).payload.data()) ? legs[i].payload->updateReferences(++ref) : NULL;
+        if (legs.at(i).payload.data()) {
+            legs[i].payload->updateReferences(++ref);
+        }
     }
 }
 
@@ -431,7 +448,9 @@ QVector<HkxObject *> hkbFootIkControlsModifier::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
     for (auto i = 0; i < legs.size(); i++){
-        (legs.at(i).payload.data()) ? list.append(legs.at(i).payload.data()) : NULL;
+        if (legs.at(i).payload.data()) {
+            list.append(legs.at(i).payload.data());
+        }
     }
     return list;
 }

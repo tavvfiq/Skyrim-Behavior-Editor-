@@ -1,12 +1,30 @@
 #-------------------------------------------------
 #
 # Project created by QtCreator 2016-02-09T01:56:49
+# Updated for 64-bit builds and modern Qt
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui widgets
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+# Require Qt 5.12 or later (supports Qt 5.12+ and Qt 6.x)
+greaterThan(QT_MAJOR_VERSION, 4): {
+    lessThan(QT_MAJOR_VERSION, 6): {
+        # Qt 5.x
+        greaterThan(QT_MINOR_VERSION, 11): {
+            # Qt 5.12+
+        } else {
+            error("This project requires Qt 5.12 or later, or Qt 6.x")
+        }
+    }
+}
+
+# Configure for 64-bit builds
+CONFIG += x86_64
+win32 {
+    CONFIG += x86_64
+    QMAKE_TARGET_ARCH = x86_64
+}
 
 TARGET = Skyrim_Behavior_Tool
 TEMPLATE = app

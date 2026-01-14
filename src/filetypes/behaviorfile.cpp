@@ -731,7 +731,9 @@ QStringList BehaviorFile::getReferencedBehaviors(const hkbBehaviorReferenceGener
     for (auto i = 0; i < generators.size(); i++){
         if (generators.at(i)->getSignature() == HKB_BEHAVIOR_REFERENCE_GENERATOR && gentoignore != generators.at(i).constData()){
             auto name = static_cast<hkbBehaviorReferenceGenerator *>(generators.at(i).data())->getBehaviorName();
-            (!list.contains(name)) ? list.append(name) : NULL;
+            if (!list.contains(name)) {
+                list.append(name);
+            }
         }
     }
     return list;
@@ -919,7 +921,9 @@ bool BehaviorFile::parse(){
     QByteArray value;
     auto ref = 0;
     auto appendnread = [&](HkxObject *obj, const QString & nameoftype){
-        (!appendAndReadData(index, obj)) ? LogFile::writeToLog("BehaviorFile: parse(): Failed to read a "+nameoftype+" object! Ref: "+QString::number(ref)) : NULL;
+        if (!appendAndReadData(index, obj)) {
+            LogFile::writeToLog("BehaviorFile: parse(): Failed to read a "+nameoftype+" object! Ref: "+QString::number(ref));
+        }
     };
     if (getReader().parse()){
         for (; index < getReader().getNumElements(); index++){
@@ -928,9 +932,13 @@ bool BehaviorFile::parse(){
                 value = getReader().getNthAttributeValueAt(index, 2);
                 if (value != ""){
                     ref = getReader().getNthAttributeValueAt(index, 0).remove(0, 1).toLong(&ok);
-                    (!ok) ? LogFile::writeToLog("BehaviorFile: parse() failed! The object reference string contained invalid characters and failed to convert to an integer!") : NULL;
+                    if (!ok) {
+                        LogFile::writeToLog("BehaviorFile: parse() failed! The object reference string contained invalid characters and failed to convert to an integer!");
+                    }
                     signature = (HkxSignature)value.toULongLong(&ok, 16);
-                    (!ok) ? LogFile::writeToLog("BehaviorFile: parse() failed! The object signature string contained invalid characters and failed to convert to an integer!") : NULL;
+                    if (!ok) {
+                        LogFile::writeToLog("BehaviorFile: parse() failed! The object signature string contained invalid characters and failed to convert to an integer!");
+                    }
                     switch (signature){
                     case HKB_STATE_MACHINE_STATE_INFO:
                         appendnread(new hkbStateMachineStateInfo(this, nullptr, ref), "HKB_STATE_MACHINE_STATE_INFO"); break;
@@ -1142,7 +1150,9 @@ bool BehaviorFile::link(){
     auto result = true;
     auto linkobjs = [&](QVector <HkxSharedPtr> & list){
         for (auto i = 0; i < list.size(); i++){
-            (!list.at(i)->link()) ? result = false : NULL;
+            if (!list.at(i)->link()) {
+                result = false;
+            }
         }
     };
     if (getRootObject().constData()){
@@ -1150,12 +1160,22 @@ bool BehaviorFile::link(){
         linkobjs(generators);
         linkobjs(modifiers);
         linkobjs(otherTypes);
-        (!behaviorGraph->link()) ? result = false : NULL;
-        (!variableValues->link()) ? result = false : NULL;
-        (!graphData->link()) ? result = false : NULL;
+        if (!behaviorGraph->link()) {
+            result = false;
+        }
+        if (!variableValues->link()) {
+            result = false;
+        }
+        if (!graphData->link()) {
+            result = false;
+        }
         for (auto i = 0; i < generators.size(); i++){
             auto sig = generators.at(i)->getSignature();
-            (sig == HKB_STATE_MACHINE || sig == HKB_BLENDER_GENERATOR || sig == BS_BONE_SWITCH_GENERATOR) ? ((generators.at(i)->link()) ? result = false : NULL) : NULL;
+            if (sig == HKB_STATE_MACHINE || sig == HKB_BLENDER_GENERATOR || sig == BS_BONE_SWITCH_GENERATOR) {
+                if (!generators.at(i)->link()) {
+                    result = false;
+                }
+            }
         }
         return result;
     }else{
@@ -1268,7 +1288,9 @@ QString BehaviorFile::detectErrors(){
         checkError(modifiers, i);
     }
     for (auto i = 0; i < otherTypes.size(); i++){
-        (otherTypes.at(i)->getSignature() == HKB_STATE_MACHINE_TRANSITION_INFO_ARRAY) ? otherTypes.at(i)->evaluateDataValidity() : NULL;
+        if (otherTypes.at(i)->getSignature() == HKB_STATE_MACHINE_TRANSITION_INFO_ARRAY) {
+            otherTypes.at(i)->evaluateDataValidity();
+        }
     }
     if (errors){
         return "WARNING: Potential errors found in \""+getFileName()+"\"!\n";

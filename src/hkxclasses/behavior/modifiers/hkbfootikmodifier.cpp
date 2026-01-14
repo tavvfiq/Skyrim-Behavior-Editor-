@@ -52,7 +52,9 @@ bool hkbFootIkModifier::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -106,7 +108,9 @@ bool hkbFootIkModifier::readData(const HkxXmlReader &reader, long & index){
         }else if (text == "legs"){
             numlegs = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "legs");
-            (numlegs > 0) ? index++ : NULL;
+            if (numlegs > 0) {
+                index++;
+            }
             for (auto j = 0; j < numlegs; j++, index++){
                 legs.append(hkLeg());
                 for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
@@ -171,7 +175,9 @@ bool hkbFootIkModifier::readData(const HkxXmlReader &reader, long & index){
                     }
                 }
             }
-            (numlegs > 0) ? index-- : NULL;
+            if (numlegs > 0) {
+                index--;
+            }
         }else if (text == "raycastDistanceUp"){
             raycastDistanceUp = reader.getElementValueAt(index).toDouble(&ok);
             checkvalue(ok, "raycastDistanceUp");
@@ -230,7 +236,9 @@ bool hkbFootIkModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -338,14 +346,18 @@ bool hkbFootIkModifier::isEventReferenced(int eventindex) const{
 void hkbFootIkModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < legs.size(); i++){
-        (legs.at(i).id > eventindex) ? legs[i].id-- : NULL;
+        if (legs.at(i).id > eventindex) {
+            legs[i].id--;
+        }
     }
 }
 
 void hkbFootIkModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < legs.size(); i++){
-        (legs.at(i).id == oldindex) ? legs[i].id = newindex : NULL;
+        if (legs.at(i).id == oldindex) {
+            legs[i].id = newindex;
+        }
     }
 }
 
@@ -380,7 +392,9 @@ void hkbFootIkModifier::updateReferences(long &ref){
     setReference(ref);
     setBindingReference(++ref);
     for (auto i = 0; i < legs.size(); i++){
-        (legs.at(i).payload.data()) ? legs[i].payload->updateReferences(++ref) : NULL;
+        if (legs.at(i).payload.data()) {
+            legs[i].payload->updateReferences(++ref);
+        }
     }
 }
 
@@ -388,7 +402,9 @@ QVector<HkxObject *> hkbFootIkModifier::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
     for (auto i = 0; i < legs.size(); i++){
-        (legs.at(i).payload.data()) ? list.append(legs.at(i).payload.data()) : NULL;
+        if (legs.at(i).payload.data()) {
+            list.append(legs.at(i).payload.data());
+        }
     }
     return list;
 }

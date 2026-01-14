@@ -292,9 +292,13 @@ void generateAppendStringToList(QStringList & list, QString & newname, const QCh
     for (auto i = 0, num = 0, index = 0; i < list.size() - 1; i++){
         if (list.at(i) == newname){
             index = newname.lastIndexOf(wheretoappend);
-            (index > -1) ? newname.remove(++index, newname.size()) : NULL;
+            if (index > -1) {
+                newname.remove(++index, newname.size());
+            }
             newname.append(QString::number(num));
-            (++num > 1) ? i = -1 : NULL;
+            if (++num > 1) {
+                i = -1;
+            }
         }
     }
     list.append(newname);

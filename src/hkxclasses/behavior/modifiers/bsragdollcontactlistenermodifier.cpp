@@ -35,7 +35,9 @@ bool BSRagdollContactListenerModifier::readData(const HkxXmlReader &reader, long
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -70,7 +72,9 @@ bool BSRagdollContactListenerModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -112,12 +116,16 @@ bool BSRagdollContactListenerModifier::isEventReferenced(int eventindex) const{
 
 void BSRagdollContactListenerModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (contactEvent.id > eventindex) ? contactEvent.id--: NULL;
+    if (contactEvent.id > eventindex) {
+        contactEvent.id--;
+    }
 }
 
 void BSRagdollContactListenerModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (contactEvent.id == oldindex) ? contactEvent.id = newindex: NULL;
+    if (contactEvent.id == oldindex) {
+        contactEvent.id = newindex;
+    }
 }
 
 void BSRagdollContactListenerModifier::fixMergedEventIndices(BehaviorFile *dominantfile){
@@ -148,7 +156,9 @@ void BSRagdollContactListenerModifier::fixMergedEventIndices(BehaviorFile *domin
 
 void BSRagdollContactListenerModifier::updateReferences(long &ref){
     auto updateref = [&](HkxSharedPtr & shdptr){
-        (shdptr.data()) ? shdptr->updateReferences(++ref) : NULL;
+        if (shdptr.data()) {
+            shdptr->updateReferences(++ref);
+        }
     };
     setReference(ref);
     setBindingReference(++ref);
@@ -160,7 +170,9 @@ QVector<HkxObject *> BSRagdollContactListenerModifier::getChildrenOtherTypes() c
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
     auto getchildren = [&](const HkxSharedPtr & shdptr){
-        (shdptr.data()) ? list.append(shdptr.data()) : NULL;
+        if (shdptr.data()) {
+            list.append(shdptr.data());
+        }
     };
     getchildren(contactEvent.payload);
     getchildren(bones);

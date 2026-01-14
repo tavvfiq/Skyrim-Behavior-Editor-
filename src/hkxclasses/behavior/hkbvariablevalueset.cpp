@@ -38,10 +38,14 @@ HkxObject * hkbVariableValueSet::getVariantVariableValueAt(int index){
 hkQuadVariable hkbVariableValueSet::getQuadVariableValueAt(int index, bool *ok){
     std::lock_guard <std::mutex> guard(mutex);
     if (quadVariableValues.size() > index && index > -1){
-        (ok) ? *ok = true : NULL;
+        if (ok) {
+            *ok = true;
+        }
         return quadVariableValues.at(index);
     }
-    (ok) ? *ok = false : NULL;
+    if (ok) {
+        *ok = false;
+    }
     return hkQuadVariable();
 }
 

@@ -65,14 +65,18 @@ void HkxObject::setRefsUpdated(bool value){
 
 void HkxObject::setParentFile(HkxFile *parent){
     std::lock_guard <std::mutex> guard(mutex);
-    (parent) ? parentFile = parent : NULL;
+    if (parent) {
+        parentFile = parent;
+    }
 }
 
 int HkxObject::getIndexOfGenerator(const HkxSharedPtr &gen) const{
     std::lock_guard <std::mutex> guard(mutex);
     auto index = -1;
     BehaviorFile *behavior = dynamic_cast<BehaviorFile *>(parentFile);
-    (behavior) ? index = behavior->getIndexOfGenerator(gen) : NULL;
+    if (behavior) {
+        index = behavior->getIndexOfGenerator(gen);
+    }
     return index;
 }
 
@@ -355,7 +359,10 @@ hkQsTransform HkxObject::readQsTransform(const QByteArray &lineIn, bool *ok) con
     for (auto transformindex = 0; transformindex <= V3_2_Z; transformindex++){
         auto valueindex = 0;
         for (; lineindex < lineIn.size(); lineindex++, valueindex++){
-            valueindex >= size ? size = size*2, value.resize(size) : NULL;
+            if (valueindex >= size) {
+                size = 2;
+                value.resize(size);
+            }
             if ((lineIn.at(lineindex) >= '0' && lineIn.at(lineindex) <= '9') || (lineIn.at(lineindex) == '-' && valueindex != 0)){
                 value[valueindex] = lineIn.at(lineindex);
             }else if (lineIn.at(lineindex) == '.' && (!dotcount && valueindex > 0)){

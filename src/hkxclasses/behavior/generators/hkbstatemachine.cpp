@@ -403,7 +403,10 @@ bool hkbStateMachine::merge(HkxObject *recessiveObject){ //TO DO: Make thread sa
 void hkbStateMachine::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     auto update = [&](const HkxSharedPtr & shdptr){
-        shdptr.data() ? shdptr.data()->setReference(++ref), shdptr.data()->updateReferences(++ref) : NULL;
+        if (shdptr.data()) {
+            shdptr.data()->setReference(++ref);
+            shdptr.data()->updateReferences(++ref);
+        }
     };
     setReference(ref);
     setBindingReference(++ref);
@@ -415,7 +418,9 @@ QVector<HkxObject *> hkbStateMachine::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
     auto append = [&](const HkxSharedPtr & shdptr){
-        shdptr.data() ? list.append(shdptr.data()) : NULL;
+        if (shdptr.data()) {
+            list.append(shdptr.data());
+        }
     };
     append(eventToSendWhenStateOrTransitionChanges.payload);
     append(wildcardTransitions);
@@ -604,7 +609,9 @@ bool hkbStateMachine::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -669,7 +676,9 @@ bool hkbStateMachine::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){

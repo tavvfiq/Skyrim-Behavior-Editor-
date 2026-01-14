@@ -278,7 +278,9 @@ bool CharacterFile::parse(){
     QByteArray value;
     auto ref = 0;
     auto appendread = [&](HkxObject *obj, const QString & nameoftype){
-        (!appendAndReadData(index, obj)) ? LogFile::writeToLog("CharacterFile: parse(): Failed to read a "+nameoftype+" object! Ref: "+QString::number(ref)) : NULL;
+        if (!appendAndReadData(index, obj)) {
+            LogFile::writeToLog("CharacterFile: parse(): Failed to read a "+nameoftype+" object! Ref: "+QString::number(ref));
+        }
     };
     if (getReader().parse()){
         for (; index < getReader().getNumElements(); index++){
@@ -287,9 +289,13 @@ bool CharacterFile::parse(){
                 value = getReader().getNthAttributeValueAt(index, 2);
                 if (value != ""){
                     ref = getReader().getNthAttributeValueAt(index, 0).remove(0, 1).toLong(&ok);
-                    (!ok) ? LogFile::writeToLog("CharacterFile: parse() failed! The object reference string contained invalid characters and failed to convert to an integer!") : NULL;
+                    if (!ok) {
+                        LogFile::writeToLog("CharacterFile: parse() failed! The object reference string contained invalid characters and failed to convert to an integer!");
+                    }
                     signature = (HkxSignature)value.toULongLong(&ok, 16);
-                    (!ok) ? LogFile::writeToLog("CharacterFile: parse() failed! The object signature string contained invalid characters and failed to convert to an integer!") : NULL;
+                    if (!ok) {
+                        LogFile::writeToLog("CharacterFile: parse() failed! The object signature string contained invalid characters and failed to convert to an integer!");
+                    }
                     switch (signature){
                     case HKB_BONE_WEIGHT_ARRAY:
                         appendread(new hkbBoneWeightArray(this, ref), "HKB_BONE_WEIGHT_ARRAY"); break;
@@ -315,7 +321,9 @@ bool CharacterFile::parse(){
         }
         closeFile();
         getReader().clear();
-        (link()) ? ok = true : NULL;
+        if (link()) {
+            ok = true;
+        }
     }else{
         LogFile::writeToLog(fileName()+": failed to parse!!!");
     }
@@ -369,21 +377,31 @@ void CharacterFile::write(){
         characterData->setIsWritten(false);
         characterPropertyValues->setIsWritten(false);
         (mirroredSkeletonInfo.data()) ? mirroredSkeletonInfo->setIsWritten(false) : LogFile::writeToLog("CharacterFile::write(): 'mirroredSkeletonInfo' is nullptr!!");
-        (handIkDriverInfo.data()) ? handIkDriverInfo->setIsWritten(false) : NULL;
-        (footIkDriverInfo.data()) ? footIkDriverInfo->setIsWritten(false) : NULL;
+        if (handIkDriverInfo.data()) {
+            handIkDriverInfo->setIsWritten(false);
+        }
+        if (footIkDriverInfo.data()) {
+            footIkDriverInfo->setIsWritten(false);
+        }
         stringData->setReference(ref++);
         characterData->setReference(ref++);
         characterPropertyValues->setReference(ref++);
         mirroredSkeletonInfo->setReference(ref++);
-        (handIkDriverInfo.data()) ? handIkDriverInfo->setReference(ref++) : NULL;
-        (footIkDriverInfo.data()) ? footIkDriverInfo->setReference(ref++) : NULL;
+        if (handIkDriverInfo.data()) {
+            handIkDriverInfo->setReference(ref++);
+        }
+        if (footIkDriverInfo.data()) {
+            footIkDriverInfo->setReference(ref++);
+        }
         ref++;
         for (auto i = 0; i < boneWeightArrays.size(); i++, ref++){
             boneWeightArrays.at(i)->setIsWritten(false);
             boneWeightArrays.at(i)->setReference(ref);
         }
         getWriter().setFile(this);
-        (!getWriter().writeToXMLFile()) ? LogFile::writeToLog("CharacterFile::write(): writeToXMLFile() failed!!") : NULL;
+        if (!getWriter().writeToXMLFile()) {
+            LogFile::writeToLog("CharacterFile::write(): writeToXMLFile() failed!!");
+        }
     }else{
         LogFile::writeToLog("CharacterFile::write(): The root object is nullptr!!");
     }

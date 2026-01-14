@@ -46,7 +46,9 @@ bool hkbSenseHandleModifier::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -67,7 +69,9 @@ bool hkbSenseHandleModifier::readData(const HkxXmlReader &reader, long & index){
         }else if (text == "ranges"){
             numranges = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "ranges");
-            (numranges > 0) ? index++ : NULL;
+            if (numranges > 0) {
+                index++;
+            }
             for (auto j = 0; j < numranges; j++, index++){
                 ranges.append(hkRanges());
                 for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
@@ -90,7 +94,9 @@ bool hkbSenseHandleModifier::readData(const HkxXmlReader &reader, long & index){
                     }
                 }
             }
-            (numranges > 0) ? index-- : NULL;
+            if (numranges > 0) {
+                index--;
+            }
         }else if (text == "handleOut"){
             checkvalue(handleOut.readShdPtrReference(index, reader), "handleOut");
         }else if (text == "handleIn"){
@@ -144,7 +150,9 @@ bool hkbSenseHandleModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -218,14 +226,18 @@ bool hkbSenseHandleModifier::isEventReferenced(int eventindex) const{
 void hkbSenseHandleModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < ranges.size(); i++){
-        (ranges.at(i).event.id > eventindex) ? ranges[i].event.id-- : NULL;
+        if (ranges.at(i).event.id > eventindex) {
+            ranges[i].event.id--;
+        }
     }
 }
 
 void hkbSenseHandleModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < ranges.size(); i++){
-        (ranges.at(i).event.id == oldindex) ? ranges[i].event.id = newindex : NULL;
+        if (ranges.at(i).event.id == oldindex) {
+            ranges[i].event.id = newindex;
+        }
     }
 }
 
@@ -259,7 +271,9 @@ void hkbSenseHandleModifier::updateReferences(long &ref){
     setReference(ref);
     setBindingReference(++ref);
     for (auto i = 0; i < ranges.size(); i++){
-        (ranges.at(i).event.payload.data()) ? ranges[i].event.payload->updateReferences(++ref) : NULL;
+        if (ranges.at(i).event.payload.data()) {
+            ranges[i].event.payload->updateReferences(++ref);
+        }
     }
 }
 
@@ -267,7 +281,9 @@ QVector<HkxObject *> hkbSenseHandleModifier::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
     for (auto i = 0; i < ranges.size(); i++){
-        (ranges.at(i).event.payload.data()) ? list.append(ranges.at(i).event.payload.data()) : NULL;
+        if (ranges.at(i).event.payload.data()) {
+            list.append(ranges.at(i).event.payload.data());
+        }
     }
     return list;
 }

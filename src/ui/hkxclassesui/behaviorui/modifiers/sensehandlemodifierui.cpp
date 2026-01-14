@@ -346,7 +346,9 @@ void SenseHandleModifierUI::loadData(HkxObject *data){
 void SenseHandleModifierUI::loadDynamicTableRows(){
     if (bsData){
         auto temp = ADD_RANGE_ROW + bsData->getNumberOfRanges() + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         for (auto i = ADD_RANGE_ROW + 1, j = 0; j < bsData->getNumberOfRanges(); i++, j++){
             UIHelper::setRowItems(i, "Range "+QString::number(j), "hkRange", "Remove", "Edit", "Double click to remove this range", "Double click to edit this range", table);
         }
@@ -589,7 +591,9 @@ void SenseHandleModifierUI::variableRenamed(const QString & name, int index){
         if (bind){
             auto setname = [&](const QString & fieldname, int row){
                 auto bindIndex = bind->getVariableIndexOfBinding(fieldname);
-                (bindIndex == index) ? table->item(row, BINDING_COLUMN)->setText(name) : NULL;
+                if (bindIndex == index) {
+                    table->item(row, BINDING_COLUMN)->setText(name);
+                }
             };
             setname("enable", ENABLE_ROW);
             setname("sensorLocalOffset", SENSOR_LOCAL_OFFSET_ROW);

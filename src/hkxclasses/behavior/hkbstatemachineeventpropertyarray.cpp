@@ -46,14 +46,18 @@ bool hkbStateMachineEventPropertyArray::readData(const HkxXmlReader &reader, lon
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
         if (text == "events"){
             numEvents = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "events");
-            (numEvents > 0) ? index++ : NULL;
+            if (numEvents > 0) {
+                index++;
+            }
             for (auto j = 0; j < numEvents; j++, index++){
                 events.append(hkEventPayload());
                 for (; index < reader.getNumElements(); index++){
@@ -67,7 +71,9 @@ bool hkbStateMachineEventPropertyArray::readData(const HkxXmlReader &reader, lon
                     }
                 }
             }
-            (numEvents > 0) ? index-- : NULL;
+            if (numEvents > 0) {
+                index--;
+            }
         }
     }
     index--;
@@ -123,14 +129,18 @@ bool hkbStateMachineEventPropertyArray::isEventReferenced(int eventindex) const{
 void hkbStateMachineEventPropertyArray::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < events.size(); i++){
-        (events.at(i).id > eventindex) ? events[i].id-- : NULL;
+        if (events.at(i).id > eventindex) {
+            events[i].id--;
+        }
     }
 }
 
 void hkbStateMachineEventPropertyArray::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < events.size(); i++){
-        (events.at(i).id == oldindex) ? events[i].id = newindex : NULL;
+        if (events.at(i).id == oldindex) {
+            events[i].id = newindex;
+        }
     }
 }
 
@@ -200,7 +210,9 @@ void hkbStateMachineEventPropertyArray::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     setReference(ref);
     for (auto i = 0; i < events.size(); i++){
-        (events.at(i).payload.data()) ? events[i].payload->updateReferences(++ref) : NULL;
+        if (events.at(i).payload.data()) {
+            events[i].payload->updateReferences(++ref);
+        }
     }
 }
 
@@ -208,7 +220,9 @@ QVector<HkxObject *> hkbStateMachineEventPropertyArray::getChildrenOtherTypes() 
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
     for (auto i = 0; i < events.size(); i++){
-        (events.at(i).payload.data()) ? list.append(events.at(i).payload.data()) : NULL;
+        if (events.at(i).payload.data()) {
+            list.append(events.at(i).payload.data());
+        }
     }
     return list;
 }

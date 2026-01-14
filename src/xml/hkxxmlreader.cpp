@@ -20,9 +20,13 @@ bool HkxXmlReader::parse(){
         if (line == "<?xml version=\"1.0\" encoding=\"ascii\"?>\n" || line == "<?xml version=\"1.0\" encoding=\"ascii\"?>\r\n"){
             while (!isEOF){
                 result = readNextLine();
-                (result != NoError && result != EmptyLine && result != EmptyLineEndFile) ? LogFile::writeToLog("HkxXmlReader: parse() failed because readNextLine() failed!") : NULL;
+                if (result != NoError && result != EmptyLine && result != EmptyLineEndFile) {
+                    LogFile::writeToLog("HkxXmlReader: parse() failed because readNextLine() failed!");
+                }
             }
-            (!indexOfElemTags.isEmpty()) ? LogFile::writeToLog("HkxXmlReader: parse() failed because there are orphaned element tags!!!") : NULL;
+            if (!indexOfElemTags.isEmpty()) {
+                LogFile::writeToLog("HkxXmlReader: parse() failed because there are orphaned element tags!!!");
+            }
             isEOF = true;
             return true;
         }else{

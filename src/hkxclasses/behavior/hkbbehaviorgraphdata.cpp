@@ -46,7 +46,9 @@ int hkbBehaviorGraphData::addVariable(hkVariableType type, const QString & name,
             varInfo.type = Type.at(type);
             if (isProperty){
                 index = strData->addCharacterPropertyName(name, &varAdded);
-                (varAdded) ? characterPropertyInfos.append(varInfo) : NULL;
+                if (varAdded) {
+                    characterPropertyInfos.append(varInfo);
+                }
             }else{
                 index = strData->addVariableName(name, &varAdded);
                 if (varAdded){
@@ -92,12 +94,16 @@ void hkbBehaviorGraphData::removeVariable(int index){
         if (index < variableInfos.size() && index > -1){
             if (variableInfos.at(index).type == "VARIABLE_TYPE_POINTER"){
                 for (auto i = 0; i <= index; i++){
-                    (variableInfos.at(i).type == "VARIABLE_TYPE_POINTER") ? count++ : NULL;
+                    if (variableInfos.at(i).type == "VARIABLE_TYPE_POINTER") {
+                        count++;
+                    }
                 }
                 varData->removeVariantVariableValueAt(count);
             }else if (variableInfos.at(index).type == "VARIABLE_TYPE_VECTOR4" || variableInfos.at(index).type == "VARIABLE_TYPE_QUATERNION"){
                 for (auto i = 0; i <= index; i++){
-                    (variableInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || variableInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") ? count++ : NULL;
+                    if (variableInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || variableInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") {
+                        count++;
+                    }
                 }
                 varData->removeQuadVariableValueAt(count);
             }
@@ -116,7 +122,9 @@ void hkbBehaviorGraphData::addEvent(const QString &name){
     auto wasadded = false;
     if (strData){
         strData->addEventName(name, &wasadded);
-        (wasadded) ? eventInfos.append("0") : NULL;
+        if (wasadded) {
+            eventInfos.append("0");
+        }
     }else{
         LogFile::writeToLog(getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": stringData is nullptr!");
     }
@@ -138,7 +146,9 @@ void hkbBehaviorGraphData::removeEvent(int index){
     auto strData = static_cast<hkbBehaviorGraphStringData *>(stringData.data());
     if (strData){
         if (index < eventInfos.size() && index > -1){
-            (strData->removeEventNameAt(index)) ? eventInfos.removeAt(index) : NULL;
+            if (strData->removeEventNameAt(index)) {
+                eventInfos.removeAt(index);
+            }
         }
     }else{
         LogFile::writeToLog(getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": stringData is nullptr!");
@@ -168,7 +178,9 @@ hkVariableType hkbBehaviorGraphData::getVariableTypeAt(int index) const{
     if (variableInfos.size() > index && index > -1){
         type = Type.indexOf(variableInfos.at(index).type);
     }
-    (type == -1) ? type = VARIABLE_TYPE_INT8 : NULL;
+    if (type == -1) {
+        type = VARIABLE_TYPE_INT8;
+    }
     return (hkVariableType)type;
 }
 
@@ -240,7 +252,9 @@ void hkbBehaviorGraphData::setQuadVariableValueAt(int index, hkQuadVariable valu
         if (index < variableInfos.size() && index >= 0){
             if (variableInfos.at(index).type == "VARIABLE_TYPE_VECTOR4" || variableInfos.at(index).type == "VARIABLE_TYPE_QUATERNION"){
                 for (auto i = 0; i <= index; i++){
-                    (variableInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || variableInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") ? count++ : NULL;
+                    if (variableInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || variableInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") {
+                        count++;
+                    }
                 }
                 if (count != -1){
                     varData->setQuadVariableValueAt(count, value);
@@ -259,7 +273,9 @@ hkQuadVariable hkbBehaviorGraphData::getQuadVariableValueAt(int index, bool *ok)
         if (variableInfos.size() > index){
             auto count = -1;
             for (auto i = 0; i <= index; i++){
-                (variableInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || variableInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") ? count++ : NULL;
+                if (variableInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || variableInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") {
+                    count++;
+                }
             }
             if (count != -1){
                 return variableValues->getQuadVariableValueAt(count, ok);
@@ -268,7 +284,9 @@ hkQuadVariable hkbBehaviorGraphData::getQuadVariableValueAt(int index, bool *ok)
     }else{
         LogFile::writeToLog(getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": variableInitialValues is nullptr!");
     }
-    (ok) ? ok = false : NULL;
+    if (ok) {
+        ok = false;
+    }
     return hkQuadVariable();
 }
 
@@ -279,7 +297,9 @@ HkxObject * hkbBehaviorGraphData::getVariantVariable(int index) const{
         if (variableInfos.size() > index){
             auto count = -1;
             for (auto i = 0; i <= index; i++){
-                (variableInfos.at(i).type == "VARIABLE_TYPE_POINTER") ? count++ : NULL;
+                if (variableInfos.at(i).type == "VARIABLE_TYPE_POINTER") {
+                    count++;
+                }
             }
             if (count != -1){
                 return variableValues->getVariantVariableValueAt(count);
@@ -299,7 +319,9 @@ hkVariableType hkbBehaviorGraphData::getCharacterPropertyTypeAt(int index) const
     if (characterPropertyInfos.size() > index && index > -1){
         type = Type.indexOf(characterPropertyInfos.at(index).type);
     }
-    (type == -1) ? type = VARIABLE_TYPE_INT8 : NULL;
+    if (type == -1) {
+        type = VARIABLE_TYPE_INT8;
+    }
     return (hkVariableType)type;
 }
 
@@ -477,7 +499,9 @@ bool hkbBehaviorGraphData::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){

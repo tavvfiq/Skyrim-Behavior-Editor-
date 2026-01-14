@@ -21,7 +21,12 @@ hkbBoneWeightArray::hkbBoneWeightArray(HkxFile *parent, long ref, int size)
 
 void hkbBoneWeightArray::setBoneWeightAt(int index, int value){
     std::lock_guard <std::mutex> guard(mutex);
-    (index >= 0 && index < boneWeights.size() && value < static_cast<BehaviorFile *>(getParentFile())->getNumberOfBones()) ? boneWeights[index] = value, getParentFile()->setIsChanged(true) : LogFile::writeToLog(getParentFilename()+": "+getClassname()+": failed to set boneWeights!");
+    if (index >= 0 && index < boneWeights.size() && value < static_cast<BehaviorFile *>(getParentFile())->getNumberOfBones()) {
+        boneWeights[index] = value;
+        getParentFile()->setIsChanged(true);
+    } else {
+        LogFile::writeToLog(getParentFilename()+": "+getClassname()+": failed to set boneWeights!");
+    }
 }
 
 void hkbBoneWeightArray::copyBoneWeights(const hkbBoneWeightArray *other){
@@ -35,10 +40,14 @@ void hkbBoneWeightArray::copyBoneWeights(const hkbBoneWeightArray *other){
 qreal hkbBoneWeightArray::getBoneWeightAt(int index, bool * ok) const{
     std::lock_guard <std::mutex> guard(mutex);
     if (index >= 0 && index < boneWeights.size()){
-        (ok) ? *ok = true : NULL;
+        if (ok) {
+            *ok = true;
+        }
         return boneWeights.at(index);
     }
-    (ok) ? *ok = false : NULL;
+    if (ok) {
+        *ok = false;
+    }
     return -1;
 }
 
@@ -58,7 +67,9 @@ bool hkbBoneWeightArray::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -113,7 +124,9 @@ bool hkbBoneWeightArray::write(HkxXMLWriter *writer){
 QVector<HkxObject *> hkbBoneWeightArray::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector <HkxObject *> list;
-    (getVariableBindingSetData()) ? list.append(getVariableBindingSetData()) : NULL;
+    if (getVariableBindingSetData()) {
+        list.append(getVariableBindingSetData());
+    }
     return list;
 }
 

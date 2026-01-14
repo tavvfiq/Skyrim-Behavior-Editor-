@@ -294,7 +294,9 @@ void ClipGeneratorUI::loadData(HkxObject *data){
 void ClipGeneratorUI::loadDynamicTableRows(){
     if (bsData){
         auto temp = ADD_TRIGGER_ROW + bsData->getNumberOfTriggers() + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         auto triggers = static_cast<hkbClipTriggerArray *>(bsData->triggers.data());
         if (triggers){
             for (auto i = ADD_TRIGGER_ROW + 1, j = 0; j < bsData->getNumberOfTriggers(); i++, j++){

@@ -63,7 +63,10 @@ QString hkbStateMachineStateInfo::getName() const{
 hkbStateMachine * hkbStateMachineStateInfo::getParentStateMachine() const{
     std::lock_guard <std::mutex> guard(mutex);
     hkbStateMachine *ptr = nullptr;
-    parentSM ? ptr = parentSM : LogFile::writeToLog(getParentFilename()+": "+getClassname()+": "+name+"' has no parent state machine!");
+    ptr = parentSM ? parentSM : nullptr;
+    if (!ptr) {
+        LogFile::writeToLog(getParentFilename()+": "+getClassname()+": "+name+"' has no parent state machine!");
+    }
     return ptr;
 }
 
@@ -113,7 +116,9 @@ void hkbStateMachineStateInfo::removeTransitionsNoLock(){
 void hkbStateMachineStateInfo::removeTransitionToState(int id){
     std::lock_guard <std::mutex> guard(mutex);
     hkbStateMachineTransitionInfoArray *trans = static_cast<hkbStateMachineTransitionInfoArray *>(transitions.data());
-    trans ? trans->removeTransitionToState(id) : trans;
+    if (trans) {
+        trans->removeTransitionToState(id);
+    }
 }
 
 bool hkbStateMachineStateInfo::setStateId(int id){
@@ -285,7 +290,9 @@ hkbStateMachine *hkbStateMachineStateInfo::getNestedStateMachine() const{
 void hkbStateMachineStateInfo::setTransitionsParentSM(hkbStateMachine *parSM){
     std::lock_guard <std::mutex> guard(mutex);
     hkbStateMachineTransitionInfoArray *trans = static_cast<hkbStateMachineTransitionInfoArray *>(transitions.data());
-    trans ? trans->setParentSM(parSM) : NULL;
+    if(trans) {
+        trans->setParentSM(parSM);
+    }
 }
 
 int hkbStateMachineStateInfo::getIndexOfObj(DataIconManager *obj) const{
@@ -318,7 +325,11 @@ QString hkbStateMachineStateInfo::getGeneratorName() const{
     std::lock_guard <std::mutex> guard(mutex);
     QString genname("NONE");
     auto gen = static_cast<hkbGenerator *>(generator.data());
-    (gen) ? genname = gen->getName() : LogFile::writeToLog(getClassname()+" Cannot get child name!");
+    if (gen) {
+        genname = gen->getName();
+    } else {
+        LogFile::writeToLog(getClassname()+" Cannot get child name!");
+    }
     return genname;
 }
 
@@ -383,7 +394,9 @@ bool hkbStateMachineStateInfo::readData(const HkxXmlReader &reader, long & index
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -422,7 +435,9 @@ bool hkbStateMachineStateInfo::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){

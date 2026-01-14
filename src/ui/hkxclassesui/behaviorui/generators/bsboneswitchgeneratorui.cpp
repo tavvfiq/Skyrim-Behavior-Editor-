@@ -136,7 +136,9 @@ void BSBoneSwitchGeneratorUI::loadData(HkxObject *data){
 void BSBoneSwitchGeneratorUI::loadDynamicTableRows(){
     if (bsData){
         auto temp = ADD_CHILD_ROW + bsData->ChildrenA.size() + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         BSBoneSwitchGeneratorBoneData *child = nullptr;
         for (auto i = ADD_CHILD_ROW + 1, j = 0; j < bsData->ChildrenA.size(); i++, j++){
             child = static_cast<BSBoneSwitchGeneratorBoneData *>(bsData->ChildrenA.at(j).data());

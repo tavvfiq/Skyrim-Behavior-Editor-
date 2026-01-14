@@ -34,7 +34,9 @@ bool BSEventOnDeactivateModifier::readData(const HkxXmlReader &reader, long & in
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -67,7 +69,9 @@ bool BSEventOnDeactivateModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -107,12 +111,16 @@ bool BSEventOnDeactivateModifier::isEventReferenced(int eventindex) const{
 
 void BSEventOnDeactivateModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (event.id > eventindex) ? event.id-- : NULL;
+    if (event.id > eventindex) {
+        event.id--;
+    }
 }
 
 void BSEventOnDeactivateModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
-    (event.id == oldindex) ? event.id = newindex : NULL;
+    if (event.id == oldindex) {
+        event.id = newindex;
+    }
 }
 
 void BSEventOnDeactivateModifier::fixMergedEventIndices(BehaviorFile *dominantfile){
@@ -145,13 +153,17 @@ void BSEventOnDeactivateModifier::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     setReference(ref);
     setBindingReference(++ref);
-    (event.payload.data()) ? event.payload->updateReferences(++ref) : NULL;
+    if (event.payload.data()) {
+        event.payload->updateReferences(++ref);
+    }
 }
 
 QVector<HkxObject *> BSEventOnDeactivateModifier::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
-    (event.payload.data()) ? list.append(event.payload.data()): NULL;
+    if (event.payload.data()) {
+        list.append(event.payload.data());
+    }
     return list;
 }
 
@@ -236,8 +248,12 @@ QString BSEventOnDeactivateModifier::evaluateDataValidity(){
         errors.append(getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": "+message+"!");
     };
     auto temp = HkDynamicObject::evaluateDataValidity();
-    (temp != "") ? errors.append(temp+getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": Invalid variable binding set!\n"): NULL;
-    (name == "") ? setinvalid("Invalid name") : NULL;
+    if (temp != "") {
+        errors.append(temp+getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": Invalid variable binding set!\n");
+    }
+    if (name == "") {
+        setinvalid("Invalid name");
+    }
     if (event.id >= static_cast<BehaviorFile *>(getParentFile())->getNumberOfEvents()){
         setinvalid("Event id out of range! Setting to max index in range!");
         event.id = static_cast<BehaviorFile *>(getParentFile())->getNumberOfEvents() - 1;

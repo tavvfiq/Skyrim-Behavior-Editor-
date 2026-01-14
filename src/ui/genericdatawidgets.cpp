@@ -121,14 +121,18 @@ void GenericTableWidget::renameItem(int index, const QString & newname){
 
 void GenericTableWidget::removeItem(int index){
     if (index < table->rowCount() && index >= 0){
-        (table->currentRow() == index) ? lastSelectedRow = -1 : NULL;
+        if (table->currentRow() == index) {
+            lastSelectedRow = -1;
+        }
         table->removeRow(index);
     }
 }
 
 void GenericTableWidget::showTable(int index, const QString & typeallowed, const QStringList &typesdisallowed){
     lastSelectedRow = index;
-    (index < table->rowCount() && index >= 0) ? table->setCurrentCell(index, 0) : NULL;
+    if (index < table->rowCount() && index >= 0) {
+        table->setCurrentCell(index, 0);
+    }
     setTypeFilter(typeallowed, typesdisallowed);
     show();
 }
@@ -143,7 +147,9 @@ void GenericTableWidget::showTable(const QString & name, const QString & typeall
         }
     }
     index = lastSelectedRow;
-    (index < table->rowCount() && index >= 0) ? table->setCurrentCell(index, 0) : NULL;
+    if (index < table->rowCount() && index >= 0) {
+        table->setCurrentCell(index, 0);
+    }
     setTypeFilter(typeallowed, typesdisallowed);
     show();
 }
@@ -152,7 +158,9 @@ void GenericTableWidget::filterItems(){
     auto hiderows = [&](int row, const QString & string, Qt::CaseSensitivity casesensitivity){
         auto item = table->item(row, 0);
         if (item){
-            (item->text() != string && !item->text().contains(string, casesensitivity)) ? table->hideRow(row) : NULL;
+            if (item->text() != string && !item->text().contains(string, casesensitivity)) {
+                table->hideRow(row);
+            }
         }else{
             LogFile::writeToLog("GenericTableWidget: Missing table widget item for row "+QString::number(row)+"!!!");
         }
@@ -164,13 +172,17 @@ void GenericTableWidget::filterItems(){
     }else{
         if (onlyTypeAllowed != ""){
             for (auto i = 1; i < table->rowCount(); i++){
-                (table->isRowHidden(i)) ? hiderows(i, onlyTypeAllowed, Qt::CaseInsensitive) : NULL;
+                if (table->isRowHidden(i)) {
+                    hiderows(i, onlyTypeAllowed, Qt::CaseInsensitive);
+                }
             }
         }else if (!typesDisallowed.isEmpty()){
             for (auto i = 1; i < table->rowCount(); i++){
                 if (table->isRowHidden(i)){
                     if (table->item(i, 1)){
-                        (!typesDisallowed.contains(table->item(i, 1)->text())) ? table->setRowHidden(i, false) : NULL;
+                        if (!typesDisallowed.contains(table->item(i, 1)->text())) {
+                            table->setRowHidden(i, false);
+                        }
                     }else{
                         LogFile::writeToLog(QString("GenericTableWidget::filterItems(): \nMissing table widget item for row "+QString::number(i)+"!!!"));
                     }
@@ -178,7 +190,9 @@ void GenericTableWidget::filterItems(){
             }
         }else{
             for (auto i = 1; i < table->rowCount(); i++){
-                (table->isRowHidden(i)) ? table->setRowHidden(i, false) : NULL;
+                if (table->isRowHidden(i)) {
+                    table->setRowHidden(i, false);
+                }
             }
         }
     }
@@ -251,7 +265,9 @@ void GenericTableWidget::itemSelected(){
     QString name;
     auto row = table->currentRow();
     if (row != lastSelectedRow){
-        (table->item(row, 0)) ? name = table->item(row, 0)->text() : NULL;
+        if (table->item(row, 0)) {
+            name = table->item(row, 0)->text();
+        }
         lastSelectedRow = row;
         emit elementSelected(row, name);
         hide();
@@ -261,7 +277,9 @@ void GenericTableWidget::itemSelected(){
 void GenericTableWidget::itemSelectedAt(int row, int ){
     QString name;
     if (row != lastSelectedRow){
-        (table->item(row, 0)) ? name = table->item(row, 0)->text() : NULL;
+        if (table->item(row, 0)) {
+            name = table->item(row, 0)->text();
+        }
         lastSelectedRow = row;
         emit elementSelected(row, name);
         hide();
@@ -334,7 +352,9 @@ void loadBinding(int row, int column, hkbVariableBindingSet *varBind, const QStr
                     varName = static_cast<BehaviorFile *>(bsData->getParentFile())->getVariableNameAt(index);
                 }
             }
-            (varName == "") ? varName = "NONE" : NULL;
+            if (varName == "") {
+                varName = "NONE";
+            }
             settextitem();
         }else{
             settextitem();

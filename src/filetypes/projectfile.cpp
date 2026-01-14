@@ -69,10 +69,14 @@ bool ProjectFile::readAnimationData(const QString & filename, const QStringList 
         if (!animfile->exists()){
             delete animfile;
             animfile = new QFile(QDir::currentPath()+"/animationdatasinglefile.txt");
-            (!animfile->exists()) ? LogFile::writeToLog("'animationdatasinglefile.txt' is missing from the application directory!") : NULL;
+            if (!animfile->exists()) {
+                LogFile::writeToLog("'animationdatasinglefile.txt' is missing from the application directory!");
+            }
         }
         (!behaviorfilenames.isEmpty()) ? result = skyrimAnimData->parse(animfile, projectname, behaviorfilenames) : result = skyrimAnimData->parse(animfile);
-        (!result) ? LogFile::writeToLog(": The project animation data file could not be parsed!!!") : NULL;
+        if (!result) {
+            LogFile::writeToLog(": The project animation data file could not be parsed!!!");
+        }
         delete animfile;
         projectIndex = skyrimAnimData->getProjectIndex(projectname);
     }else{
@@ -89,7 +93,9 @@ bool ProjectFile::readAnimationSetData(const QString & filename){
         if (!animsetfile->exists()){
             delete animsetfile;
             animsetfile = new QFile(QDir::currentPath()+"/animationsetdatasinglefile.txt");
-            (!animsetfile->exists()) ? LogFile::writeToLog(": 'animationsetdatasinglefile.txt' is missing from the application directory!") : NULL;
+            if (!animsetfile->exists()) {
+                LogFile::writeToLog(": 'animationsetdatasinglefile.txt' is missing from the application directory!");
+            }
         }
         (!skyrimAnimSetData->parse(animsetfile)) ? LogFile::writeToLog(": The project animation set data file could not be parsed!!!") : result = true;
         delete animsetfile;
@@ -174,7 +180,9 @@ bool ProjectFile::parse(){
     QByteArray value;
     auto ref = 0;
     auto appendnread = [&](HkxObject *obj, const QString & nameoftype){
-        (!appendAndReadData(index, obj)) ? LogFile::writeToLog("BehaviorFile: parse(): Failed to read a "+nameoftype+" object! Ref: "+QString::number(ref)) : NULL;
+        if (!appendAndReadData(index, obj)) {
+            LogFile::writeToLog("BehaviorFile: parse(): Failed to read a "+nameoftype+" object! Ref: "+QString::number(ref));
+        }
     };
     if (getReader().parse()){
         for (; index < getReader().getNumElements(); index++){
@@ -183,9 +191,13 @@ bool ProjectFile::parse(){
                 value = getReader().getNthAttributeValueAt(index, 2);
                 if (value != ""){
                     ref = getReader().getNthAttributeValueAt(index, 0).remove(0, 1).toLong(&ok);
-                    (!ok) ? LogFile::writeToLog("BehaviorFile: parse() failed! The object reference string contained invalid characters and failed to convert to an integer!") : NULL;
+                    if (!ok) {
+                        LogFile::writeToLog("BehaviorFile: parse() failed! The object reference string contained invalid characters and failed to convert to an integer!");
+                    }
                     signature = (HkxSignature)value.toULongLong(&ok, 16);
-                    (!ok) ? LogFile::writeToLog("BehaviorFile: parse() failed! The object signature string contained invalid characters and failed to convert to an integer!") : NULL;
+                    if (!ok) {
+                        LogFile::writeToLog("BehaviorFile: parse() failed! The object signature string contained invalid characters and failed to convert to an integer!");
+                    }
                     switch (signature){
                     case HKB_PROJECT_DATA:
                         appendnread(new hkbProjectData(this, ref), "HKB_PROJECT_DATA"); break;
@@ -566,7 +578,9 @@ void ProjectFile::deleteBehaviorFile(const QString &filename){
     for (auto i = behaviorFiles.size() - 1; i > -1; i--){
         if (filename == behaviorFiles.at(i)->fileName()){
             skyrimAnimData->removeBehaviorFromProject(projectName, behaviorFiles.at(i)->fileName().section("/", -2, -1).replace("/", "\\"));
-            (!behaviorFiles.at(i)->remove()) ? LogFile::writeToLog(": File \""+behaviorFiles.at(i)->fileName()+"\" was not deleted from the file system!") : NULL;
+            if (!behaviorFiles.at(i)->remove()) {
+                LogFile::writeToLog(": File \""+behaviorFiles.at(i)->fileName()+"\" was not deleted from the file system!");
+            }
             delete behaviorFiles.at(i);
             behaviorFiles.removeAt(i);
         }
@@ -610,13 +624,19 @@ QString ProjectFile::findAnimationNameFromEncryptedData(const QString &encrypted
     ULONGLONG value2 = encryptedname.toULongLong(&ok, 10);
     if (!ok){
         value2 = encryptedname.toULongLong(&ok, 16);
-        (!ok) ? LogFile::writeToLog("ProjectFile::findAnimationNameFromEncryptedData(): encryptedname.toULong(&ok, 10) Failed!") : NULL;
+        if (!ok) {
+            LogFile::writeToLog("ProjectFile::findAnimationNameFromEncryptedData(): encryptedname.toULong(&ok, 10) Failed!");
+        }
     }
     for (auto i = 0; i < encryptedAnimationNames.size(); i++){
         value1 = encryptedAnimationNames.at(i).toULongLong(&ok, 16);
-        (!ok) ? LogFile::writeToLog("ProjectFile::findAnimationNameFromEncryptedData(): encryptedAnimationNames.at(i).toULong(&ok, 16) Failed!") : NULL;
+        if (!ok) {
+            LogFile::writeToLog("ProjectFile::findAnimationNameFromEncryptedData(): encryptedAnimationNames.at(i).toULong(&ok, 16) Failed!");
+        }
         if (value1 == value2){
-            (!character) ? LogFile::writeToLog("ProjectFile::findAnimationNameFromEncryptedData(): character is nullptr!") : NULL;
+            if (!character) {
+                LogFile::writeToLog("ProjectFile::findAnimationNameFromEncryptedData(): character is nullptr!");
+            }
             return character->getAnimationNameAt(i).toLower().section("\\", -1, -1).replace(".hkx", "");
         }
     }
@@ -813,9 +833,17 @@ bool ProjectFile::doesBehaviorExist(const QString &behaviorname) const{
 
 ProjectFile::~ProjectFile(){
     for (auto i = 0; i < behaviorFiles.size(); i++){
-        (behaviorFiles.at(i)) ? delete behaviorFiles.at(i) : NULL;
+        if (behaviorFiles.at(i)) {
+            delete behaviorFiles.at(i);
+        }
     }
-    (character) ? delete character : NULL;
-    (skyrimAnimData) ? delete skyrimAnimData : NULL;
-    (skyrimAnimSetData) ? delete skyrimAnimSetData : NULL;
+    if (character) {
+        delete character;
+    }
+    if (skyrimAnimData) {
+        delete skyrimAnimData;
+    }
+    if (skyrimAnimSetData) {
+        delete skyrimAnimSetData;
+    }
 }

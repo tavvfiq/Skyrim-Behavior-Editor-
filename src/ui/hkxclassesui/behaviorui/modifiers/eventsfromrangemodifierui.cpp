@@ -158,7 +158,9 @@ void EventsFromRangeModifierUI::loadData(HkxObject *data){
 void EventsFromRangeModifierUI::loadDynamicTableRows(){
     if (bsData){
         auto temp = ADD_RANGE_ROW + bsData->getNumberOfRanges() + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         auto exps = bsData->getEventRanges();
         if (exps){
             for (auto i = ADD_RANGE_ROW + 1, j = 0; j < bsData->getNumberOfRanges(); i++, j++){
@@ -322,7 +324,9 @@ void EventsFromRangeModifierUI::variableRenamed(const QString & name, int index)
             if (bind){
                 auto setname = [&](const QString & fieldname, int row){
                     auto bindIndex = bind->getVariableIndexOfBinding(fieldname);
-                    (bindIndex == index) ? table->item(row, BINDING_COLUMN)->setText(name) : NULL;
+                    if (bindIndex == index) {
+                        table->item(row, BINDING_COLUMN)->setText(name);
+                    }
                 };
                 setname("enable", ENABLE_ROW);
                 setname("inputValue", INPUT_VALUE_ROW);

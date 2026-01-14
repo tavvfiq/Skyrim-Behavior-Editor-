@@ -59,7 +59,9 @@ HkxObject * hkbCharacterData::getVariantVariable(int index) const{
         if (characterPropertyInfos.size() > index){
             auto count = -1;
             for (auto i = 0; i <= index; i++){
-                (characterPropertyInfos.at(i).type == "VARIABLE_TYPE_POINTER") ? count++ : NULL;
+                if (characterPropertyInfos.at(i).type == "VARIABLE_TYPE_POINTER") {
+                    count++;
+                }
             }
             if (count != -1){
                 return variableValues->getVariantVariableValueAt(count);
@@ -123,12 +125,16 @@ void hkbCharacterData::removeVariable(int index){
         if (index < characterPropertyInfos.size() && index > -1){
             if (characterPropertyInfos.at(index).type == "VARIABLE_TYPE_POINTER"){
                 for (auto i = 0; i <= index; i++){
-                    (characterPropertyInfos.at(i).type == "VARIABLE_TYPE_POINTER") ? count++ : NULL;
+                    if (characterPropertyInfos.at(i).type == "VARIABLE_TYPE_POINTER") {
+                    count++;
+                }
                 }
                 varData->removeVariantVariableValueAt(count);
             }else if (characterPropertyInfos.at(index).type == "VARIABLE_TYPE_VECTOR4" || characterPropertyInfos.at(index).type == "VARIABLE_TYPE_QUATERNION"){
                 for (auto i = 0; i <= index; i++){
-                    (characterPropertyInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || characterPropertyInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") ? count++ : NULL;
+                    if (characterPropertyInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || characterPropertyInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") {
+                        count++;
+                    }
                 }
                 varData->removeQuadVariableValueAt(count);
             }
@@ -147,7 +153,9 @@ hkVariableType hkbCharacterData::getVariableTypeAt(int index) const{
     if (characterPropertyInfos.size() > index && index > -1){
         type = Type.indexOf(characterPropertyInfos.at(index).type);
     }
-    (type == -1) ? type = VARIABLE_TYPE_INT8 : NULL;
+    if (type == -1) {
+        type = VARIABLE_TYPE_INT8;
+    }
     return (hkVariableType)type;
 }
 
@@ -179,7 +187,9 @@ void hkbCharacterData::setQuadVariableValueAt(int index, hkQuadVariable value){
         if (index < characterPropertyInfos.size() && index >= 0){
             if (characterPropertyInfos.at(index).type == "VARIABLE_TYPE_VECTOR4" || characterPropertyInfos.at(index).type == "VARIABLE_TYPE_QUATERNION"){
                 for (auto i = 0; i <= index; i++){
-                    (characterPropertyInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || characterPropertyInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") ? count++ : NULL;
+                    if (characterPropertyInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || characterPropertyInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") {
+                        count++;
+                    }
                 }
                 if (count != -1){
                     varData->setQuadVariableValueAt(count, value);
@@ -203,7 +213,9 @@ hkQuadVariable hkbCharacterData::getQuadVariable(int index, bool *ok) const{
         if (characterPropertyInfos.size() > index){
             auto count = -1;
             for (auto i = 0; i <= index; i++){
-                (characterPropertyInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || characterPropertyInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") ? count++ : NULL;
+                if (characterPropertyInfos.at(i).type == "VARIABLE_TYPE_VECTOR4" || characterPropertyInfos.at(i).type == "VARIABLE_TYPE_QUATERNION") {
+                    count++;
+                }
             }
             if (count != -1){
                 return variableValues->getQuadVariableValueAt(count, ok);
@@ -212,7 +224,9 @@ hkQuadVariable hkbCharacterData::getQuadVariable(int index, bool *ok) const{
     }else{
         LogFile::writeToLog(getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": variableInitialValues is nullptr!");
     }
-    (ok) ? ok = false : NULL;
+    if (ok) {
+        ok = false;
+    }
     return hkQuadVariable();
 }
 
@@ -224,7 +238,9 @@ bool hkbCharacterData::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
@@ -268,7 +284,9 @@ bool hkbCharacterData::readData(const HkxXmlReader &reader, long & index){
         }else if (text == "numBonesPerLod"){
             numElems = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "numBonesPerLod");
-            (numElems > 0) ? index++ : NULL;
+            if (numElems > 0) {
+                index++;
+            }
             checkvalue((index < reader.getNumElements()), "numBonesPerLod");
             for (auto i = 0; i < numElems; i++, index++){
                 checkvalue((index < reader.getNumElements()), "numBonesPerLod");
@@ -297,7 +315,9 @@ bool hkbCharacterData::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -506,7 +526,9 @@ hkVariableType hkbCharacterData::getCharacterPropertyTypeAt(int index) const{
     if (characterPropertyInfos.size() > index && index > -1){
         type = Type.indexOf(characterPropertyInfos.at(index).type);
     }
-    (type == -1) ? type = VARIABLE_TYPE_INT8 : NULL;
+    if (type == -1) {
+        type = VARIABLE_TYPE_INT8;
+    }
     return (hkVariableType)type;
 }
 

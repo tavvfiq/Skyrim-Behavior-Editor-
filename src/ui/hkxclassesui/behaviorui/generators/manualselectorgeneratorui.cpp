@@ -136,7 +136,9 @@ void ManualSelectorGeneratorUI::loadData(HkxObject *data){
 void ManualSelectorGeneratorUI::loadDynamicTableRows(){
     if (bsData){
         auto temp = ADD_GENERATOR_ROW + bsData->generators.size() + 1;
-        (table->rowCount() != temp) ? table->setRowCount(temp) : NULL;
+        if (table->rowCount() != temp) {
+            table->setRowCount(temp);
+        }
         for (auto i = ADD_GENERATOR_ROW + 1, j = 0; j < bsData->generators.size(); i++, j++){
             auto child = static_cast<hkbGenerator *>(bsData->generators.at(j).data());  //TO DO..
             if (child){

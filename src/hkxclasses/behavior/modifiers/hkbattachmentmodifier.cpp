@@ -153,7 +153,9 @@ bool hkbAttachmentModifier::write(HkxXMLWriter *writer){
     };
     auto writeref = [&](const HkxSharedPtr & shdptr, const QString & name){
         QString refString = "null";
-        (shdptr.data()) ? refString = shdptr->getReferenceString() : NULL;
+        if (shdptr.data()) {
+            refString = shdptr->getReferenceString();
+        }
         writer->writeLine(writer->parameter, QStringList(writer->name), QStringList(name), refString);
     };
     auto writechild = [&](const HkxSharedPtr & shdptr, const QString & datafield){
@@ -222,7 +224,9 @@ bool hkbAttachmentModifier::isEventReferenced(int eventindex) const{
 void hkbAttachmentModifier::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
     auto updateind = [&](int & index){
-        (index > eventindex) ? index-- : NULL;
+        if (index > eventindex) {
+            index--;
+        }
     };
     updateind(sendToAttacherOnAttach.id);
     updateind(sendToAttacheeOnAttach.id);
@@ -233,7 +237,9 @@ void hkbAttachmentModifier::updateEventIndices(int eventindex){
 void hkbAttachmentModifier::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
     auto mergeind = [&](int & index){
-        (index == oldindex) ? index = newindex : NULL;
+        if (index == oldindex) {
+            index = newindex;
+        }
     };
     mergeind(sendToAttacherOnAttach.id);
     mergeind(sendToAttacheeOnAttach.id);
@@ -273,7 +279,9 @@ void hkbAttachmentModifier::fixMergedEventIndices(BehaviorFile *dominantfile){
 void hkbAttachmentModifier::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     auto updateref = [&](HkxSharedPtr & shdptr){
-        (shdptr.data()) ? shdptr->updateReferences(++ref) : NULL;
+        if (shdptr.data()) {
+            shdptr->updateReferences(++ref);
+        }
     };
     setReference(ref);
     setBindingReference(++ref);
@@ -287,7 +295,9 @@ QVector<HkxObject *> hkbAttachmentModifier::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
     auto getchildren = [&](const HkxSharedPtr & shdptr){
-        (shdptr.data()) ? list.append(shdptr.data()) : NULL;
+        if (shdptr.data()) {
+            list.append(shdptr.data());
+        }
     };
     getchildren(sendToAttacherOnAttach.payload);
     getchildren(sendToAttacheeOnAttach.payload);
@@ -351,7 +361,9 @@ QString hkbAttachmentModifier::evaluateDataValidity(){
         }
     };
     auto temp = HkDynamicObject::evaluateDataValidity();
-    (temp != "") ? errors.append(temp+getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": Invalid variable binding set!\n"): NULL;
+    if (temp != "") {
+        errors.append(temp+getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": Invalid variable binding set!\n");
+    }
     if (name == ""){
         isvalid = false;
         errors.append(getParentFilename()+": "+getClassname()+": Ref: "+getReferenceString()+": "+name+": Invalid name!");

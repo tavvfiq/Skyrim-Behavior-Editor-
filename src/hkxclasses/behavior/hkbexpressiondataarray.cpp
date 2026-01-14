@@ -34,13 +34,17 @@ void hkbExpressionDataArray::addExpression(const QString & exp, ExpressionEventM
 void hkbExpressionDataArray::removeExpression(const QString & exp){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < expressionsData.size(); i++){
-        (expressionsData.at(i).expression == exp) ? expressionsData.removeAt(i) : NULL;
+        if (expressionsData.at(i).expression == exp) {
+            expressionsData.removeAt(i);
+        }
     }
 }
 
 void hkbExpressionDataArray::removeExpression(int index){
     std::lock_guard <std::mutex> guard(mutex);
-    (index < expressionsData.size() && index > -1) ? expressionsData.removeAt(index) : NULL;
+    if (index < expressionsData.size() && index > -1) {
+        expressionsData.removeAt(index);
+    }
 }
 
 bool hkbExpressionDataArray::readData(const HkxXmlReader &reader, long & index){
@@ -50,14 +54,18 @@ bool hkbExpressionDataArray::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
         if (text == "expressionsData"){
             numexpressionsData = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "expressionsData");
-            (numexpressionsData > 0) ? index++ : NULL;
+            if (numexpressionsData > 0) {
+                index++;
+            }
             for (auto j = 0; j < numexpressionsData; j++, index++){
                 expressionsData.append(hkExpression());
                 for (; index < reader.getNumElements(); index++){
@@ -78,7 +86,9 @@ bool hkbExpressionDataArray::readData(const HkxXmlReader &reader, long & index){
                     }
                 }
             }
-            (numexpressionsData > 0) ? index-- : NULL;
+            if (numexpressionsData > 0) {
+                index--;
+            }
         }
     }
     index--;
@@ -185,7 +195,9 @@ bool hkbExpressionDataArray::merge(HkxObject *recessiveObject){ //TO DO: Make th
 void hkbExpressionDataArray::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < expressionsData.size(); i++){
-        (expressionsData.at(i).assignmentEventIndex > eventindex) ? expressionsData[i].assignmentEventIndex-- : NULL;
+        if (expressionsData.at(i).assignmentEventIndex > eventindex) {
+            expressionsData[i].assignmentEventIndex--;
+        }
     }
 }
 
@@ -196,7 +208,9 @@ bool hkbExpressionDataArray::link(){
 QString hkbExpressionDataArray::getExpressionAt(int index) const{
     std::lock_guard <std::mutex> guard(mutex);
     QString exp;
-    (index < expressionsData.size() && index >= 0) ? exp = expressionsData.at(index).expression : NULL;
+    if (index < expressionsData.size() && index >= 0) {
+        exp = expressionsData.at(index).expression;
+    }
     return exp;
 }
 

@@ -28,7 +28,9 @@ void hkbEventRangeDataArray::addEventRange(const hkbEventRangeData & data){
 
 void hkbEventRangeDataArray::setEventRangeIdAt(int index, int id){
     std::lock_guard <std::mutex> guard(mutex);
-    (eventData.size() > index) ? eventData[index].event.id = id : NULL;
+    if (eventData.size() > index) {
+        eventData[index].event.id = id;
+    }
 }
 
 int hkbEventRangeDataArray::getEventRangeIdAt(int index){
@@ -40,7 +42,9 @@ int hkbEventRangeDataArray::getEventRangeIdAt(int index){
 
 void hkbEventRangeDataArray::removeEventRange(int index){
     std::lock_guard <std::mutex> guard(mutex);
-    (eventData.size() > index) ? eventData.removeAt(index) : NULL;
+    if (eventData.size() > index) {
+        eventData.removeAt(index);
+    }
 }
 
 int hkbEventRangeDataArray::getLastEventDataIndex() const{
@@ -55,14 +59,18 @@ bool hkbEventRangeDataArray::readData(const HkxXmlReader &reader, long & index){
     QByteArray text;
     auto ref = reader.getNthAttributeValueAt(index - 1, 0);
     auto checkvalue = [&](bool value, const QString & fieldname){
-        (!value) ? LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref) : NULL;
+        if (!value) {
+            LogFile::writeToLog(getParentFilename()+": "+getClassname()+": readData()!\n'"+fieldname+"' has invalid data!\nObject Reference: "+ref);
+        }
     };
     for (; index < reader.getNumElements() && reader.getNthAttributeNameAt(index, 1) != "class"; index++){
         text = reader.getNthAttributeValueAt(index, 0);
         if (text == "eventData"){
             numranges = reader.getNthAttributeValueAt(index, 1).toInt(&ok);
             checkvalue(ok, "eventData");
-            (numranges > 0) ? index++ : NULL;
+            if (numranges > 0) {
+                index++;
+            }
             for (auto j = 0; j < numranges; j++, index++){
                 eventData.append(hkbEventRangeData());
                 for (; index < reader.getNumElements(); index++){
@@ -82,7 +90,9 @@ bool hkbEventRangeDataArray::readData(const HkxXmlReader &reader, long & index){
                     }
                 }
             }
-            (numranges > 0) ? index-- : NULL;
+            if (numranges > 0) {
+                index--;
+            }
         }
     }
     index--;
@@ -152,14 +162,18 @@ bool hkbEventRangeDataArray::isEventReferenced(int eventindex) const{
 void hkbEventRangeDataArray::updateEventIndices(int eventindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < eventData.size(); i++){
-        (eventData.at(i).event.id > eventindex) ? eventData[i].event.id-- : NULL;
+        if (eventData.at(i).event.id > eventindex) {
+            eventData[i].event.id--;
+        }
     }
 }
 
 void hkbEventRangeDataArray::mergeEventIndex(int oldindex, int newindex){
     std::lock_guard <std::mutex> guard(mutex);
     for (auto i = 0; i < eventData.size(); i++){
-        (eventData.at(i).event.id == oldindex) ? eventData[i].event.id = newindex : NULL;
+        if (eventData.at(i).event.id == oldindex) {
+            eventData[i].event.id = newindex;
+        }
     }
 }
 
@@ -192,7 +206,9 @@ void hkbEventRangeDataArray::updateReferences(long &ref){
     std::lock_guard <std::mutex> guard(mutex);
     setReference(ref);
     for (auto i = 0; i < eventData.size(); i++){
-        (eventData.at(i).event.payload.data()) ? eventData[i].event.payload->updateReferences(++ref) : NULL;
+        if (eventData.at(i).event.payload.data()) {
+            eventData[i].event.payload->updateReferences(++ref);
+        }
     }
 }
 
@@ -200,7 +216,9 @@ QVector<HkxObject *> hkbEventRangeDataArray::getChildrenOtherTypes() const{
     std::lock_guard <std::mutex> guard(mutex);
     QVector<HkxObject *> list;
     for (auto i = 0; i < eventData.size(); i++){
-        (eventData.at(i).event.payload.data()) ? list.append(eventData.at(i).event.payload.data()) : NULL;
+        if (eventData.at(i).event.payload.data()) {
+            list.append(eventData.at(i).event.payload.data());
+        }
     }
     return list;
 }
